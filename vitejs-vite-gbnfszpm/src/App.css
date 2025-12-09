@@ -1,0 +1,513 @@
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    'Segoe UI', sans-serif;
+  color: #e5e7eb;
+  background-color: #020617;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* ========== MAIN APP (FORM) ========== */
+
+.app {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 24px; /* قللنا الـ padding الجانبي */
+}
+
+.form-shell {
+  width: 100%;
+  max-width: 100%; /* ✅ مفيش حدود للعرض غير الشاشة */
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  border-radius: 20px;
+  border: 1px solid #1f2937;
+  background: #020617;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+}
+
+.app-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  letter-spacing: 0.4px;
+}
+
+/* Cards */
+
+.card {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #020617;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Fields */
+
+.field {
+  display: block;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #9ca3af;
+}
+
+.field-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field-hint {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  outline: none;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.input:focus {
+  border-color: #38bdf8;
+}
+
+.textarea {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  resize: vertical;
+  outline: none;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.textarea:focus {
+  border-color: #38bdf8;
+}
+
+/* Items */
+
+.item-card {
+  border-radius: 10px;
+  border: 1px solid #1f2937;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: #020617;
+}
+
+.item-row {
+  display: flex;
+  gap: 8px;
+}
+
+.item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+/* Image preview inside form */
+
+.form-image-preview {
+  width: 80px;
+  height: 80px;
+  margin-top: 6px;
+  border-radius: 10px;
+  border: 1px solid #1f2937;
+  overflow: hidden;
+  background: #020617;
+}
+
+.form-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Buttons */
+
+.btn-primary {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  background: #38bdf8;
+  color: #020617;
+  cursor: pointer;
+}
+
+.btn-outline {
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px dashed #6b7280;
+  font-size: 12px;
+  background: #020617;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.btn-delete {
+  background: #7f1d1d;
+  border-radius: 999px;
+  border: none;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #fee2e2;
+}
+
+/* ========== MODALS ========== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-card {
+  width: min(520px, 100% - 32px);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #020617;
+  border-radius: 16px;
+  border: 1px solid #1f2937;
+  padding: 16px 14px 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+}
+
+/* ========== PREVIEW ROOT (INVOICE WINDOW) ========== */
+
+.preview-root {
+  min-height: 100vh;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+}
+
+.no-preview {
+  padding: 24px 28px;
+  border-radius: 18px;
+  border: 1px dashed #9ca3af;
+  background: #ffffff;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+/* Toolbar for print/export buttons */
+
+.preview-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* العناصر اللي مش عايزها تطبع */
+.no-print {
+  /* هيتم إخفاؤها في @media print برضه */
+}
+
+.print-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #020617;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ========== INVOICE PAGE (A4 LOOK) ========== */
+
+.invoice-page {
+  width: 794px; /* ~ 210mm عند 96dpi */
+  min-height: 1123px; /* ~ 297mm */
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+  padding: 40px 48px;
+  border-radius: 18px;
+  color: #111827;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  letter-spacing: 0.15px;
+}
+
+/* ---------- HEADER ---------- */
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  text-align: right;
+  font-size: 11px;
+}
+
+/* Logo */
+
+.company-logo {
+  max-height: 34px;
+  max-width: 140px;
+  opacity: 0.9;
+  object-fit: contain;
+  display: block;
+}
+
+/* Company info */
+
+.company-name {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.35px;
+}
+
+.small-text {
+  font-size: 10.5px;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+.small-text.email-line {
+  margin-top: 2px;
+  letter-spacing: 0.25px;
+}
+
+/* Invoice title */
+
+.invoice-title {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+/* Client/meta blocks */
+
+.invoice-meta-block {
+  font-size: 10.5px;
+}
+
+.invoice-meta-block strong {
+  font-weight: 500;
+}
+
+.client-block {
+  font-size: 10.5px;
+  color: #374151;
+}
+
+.section-label {
+  font-size: 9px;
+  letter-spacing: 1.6px;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+/* ---------- ITEMS TABLE ---------- */
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+}
+
+.items-table thead th {
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 6px 4px;
+  text-align: left;
+}
+
+.items-table thead th.th-center {
+  text-align: center;
+}
+
+.items-table thead th.th-right {
+  text-align: right;
+}
+
+.items-table td {
+  font-size: 10.8px;
+  color: #111827;
+  padding: 10px 4px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.td-center {
+  text-align: center;
+}
+
+.td-right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.item-name {
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.item-code {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #9ca3af;
+}
+
+/* Item photo */
+
+.table-photo {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ---------- TOTALS ---------- */
+
+.invoice-totals {
+  margin-top: 28px;
+}
+
+.totals-box {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.totals-row-strong {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* ---------- NOTES & FOOTER ---------- */
+
+.invoice-notes {
+  margin-top: 24px;
+  font-size: 10.5px;
+  color: #6b7280;
+}
+
+.invoice-footer {
+  margin-top: 32px;
+  font-size: 10.5px;
+  color: #6b7280;
+}
+
+.thankyou {
+  margin-top: 12px;
+  font-style: italic;
+  color: #9ca3af;
+  text-align: left;
+}
+
+/* ========== PRINT STYLES ========== */
+
+@media print {
+  body {
+    margin: 0;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important; /* إخفاء الأزرار في الـ PDF */
+  }
+
+  .preview-root {
+    padding: 0;
+    background: #ffffff !important;
+  }
+
+  .invoice-page {
+    box-shadow: none;
+    border-radius: 0;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 15mm 15mm 20mm 15mm;
+  }
+}
+
+/* تحديد مقاس ورقة الطباعة ومارجن الطابعة */
+@page {
+  size: A4;
+  margin: 10mm;
+}
