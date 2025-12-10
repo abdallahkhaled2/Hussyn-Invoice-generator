@@ -220,7 +220,7 @@ const App: React.FC = () => {
         const parsed = JSON.parse(draft);
         if (parsed.client) setClient(parsed.client);
         if (parsed.meta) setMeta(parsed.meta);
-        if (parsed.items) setItems(parsed.items);
+        if (parsed.items && parsed.items.length > 0) setItems(parsed.items);
         if (parsed.vatRate !== undefined) setVatRate(parsed.vatRate);
         if (parsed.discount !== undefined) setDiscount(parsed.discount);
         if (parsed.notes !== undefined) setNotes(parsed.notes);
