@@ -41,6 +41,7 @@ export interface MaterialRow {
   name: string;
   unit: string;
   qty: number;
+  cost: number;
 }
 
 export interface InvoiceItem {

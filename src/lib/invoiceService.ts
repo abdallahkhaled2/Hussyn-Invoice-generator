@@ -115,6 +115,8 @@ export const saveInvoice = async (payload: InvoicePayload) => {
           unit: mat.unit,
           qty_per_item: mat.qty,
           total_qty: mat.qty * item.qty,
+          unit_cost: mat.cost,
+          total_cost: mat.cost * mat.qty * item.qty,
         }));
 
         const { error: materialsError } = await supabase

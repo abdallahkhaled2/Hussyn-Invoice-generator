@@ -1520,6 +1520,7 @@ const DoorCostModal: React.FC<DoorCostModalProps> = ({
       name: `Natural wood frame (${woodLabel})`,
       unit: 'm³',
       qty: parseFloat(frameVolumeM3.toFixed(3)),
+      cost: woodRatePerM3,
     });
   }
 
@@ -1528,29 +1529,54 @@ const DoorCostModal: React.FC<DoorCostModalProps> = ({
       name: 'MDF 10mm (door faces)',
       unit: 'sheet',
       qty: parseFloat(mdfSheetsNeeded.toFixed(3)),
+      cost: pricing.mdf10RatePerSheet,
     });
   }
 
   if (doorCost.veneerType === 'Walnut' || doorCost.veneerType === 'Oak' || doorCost.veneerType === 'Beech') {
+    let veneerRate = pricing.walnutVeneerRatePerM2;
+    if (doorCost.veneerType === 'Oak') veneerRate = pricing.oakVeneerRatePerM2;
+    if (doorCost.veneerType === 'Beech') veneerRate = pricing.beechVeneerRatePerM2;
+
     materials.push({
       name: `${doorCost.veneerType} veneer`,
       unit: 'm²',
       qty: parseFloat(areaBothFacesM2.toFixed(3)),
+      cost: veneerRate,
     });
+
+    let finishRatePerM2 = 0;
+    if (doorCost.finishType === 'PU matte') finishRatePerM2 = pricing.finishPuMatteRatePerM2;
+    else if (doorCost.finishType === 'PU high gloss') finishRatePerM2 = pricing.finishPuHighGlossRatePerM2;
+    else if (doorCost.finishType === 'NC') finishRatePerM2 = pricing.finishNcRatePerM2;
+    else if (doorCost.finishType === 'Oil / stain') finishRatePerM2 = pricing.finishOilRatePerM2;
+
+    if (finishRatePerM2 > 0) {
+      materials.push({
+        name: `Finish (${doorCost.finishType})`,
+        unit: 'm²',
+        qty: parseFloat(areaBothFacesM2.toFixed(3)),
+        cost: finishRatePerM2,
+      });
+    }
   } else if (doorCost.veneerType === 'HPL' || doorCost.veneerType === 'LPL') {
     const veneerSheetsNeeded = areaBothFacesM2 / sheetAreaM2;
+    const laminateRate = doorCost.veneerType === 'HPL' ? pricing.hplRatePerSheet : pricing.lplRatePerSheet;
     materials.push({
       name: `${doorCost.veneerType} laminate`,
       unit: 'sheet',
       qty: parseFloat(veneerSheetsNeeded.toFixed(3)),
+      cost: laminateRate,
     });
   }
 
   if (doorCost.glassAreaM2 > 0 && (doorCost.glassType === 'Glass6' || doorCost.glassType === 'Glass10')) {
+    const glassRate = doorCost.glassType === 'Glass6' ? pricing.glass6RatePerM2 : pricing.glass10RatePerM2;
     materials.push({
       name: `Glass ${doorCost.glassType === 'Glass6' ? '6mm' : '10mm'}`,
       unit: 'm²',
       qty: parseFloat(doorCost.glassAreaM2.toFixed(3)),
+      cost: glassRate,
     });
   }
 
@@ -1559,6 +1585,25 @@ const DoorCostModal: React.FC<DoorCostModalProps> = ({
       name: 'Steel chassis',
       unit: 'piece',
       qty: 1,
+      cost: pricing.steelChassisCostPerPiece,
+    });
+  }
+
+  if (doorCost.accessoriesCost > 0) {
+    materials.push({
+      name: 'Accessories',
+      unit: 'EGP',
+      qty: 1,
+      cost: doorCost.accessoriesCost,
+    });
+  }
+
+  if (doorCost.overheadCost > 0) {
+    materials.push({
+      name: 'Overhead',
+      unit: 'EGP',
+      qty: 1,
+      cost: doorCost.overheadCost,
     });
   }
 
@@ -1567,6 +1612,7 @@ const DoorCostModal: React.FC<DoorCostModalProps> = ({
       name: 'Labor',
       unit: 'hour',
       qty: doorCost.laborHours,
+      cost: pricing.laborRatePerHour,
     });
   }
 
@@ -2031,6 +2077,7 @@ const SeatingCostModal: React.FC<SeatingCostModalProps> = ({
       name: `Natural solid wood (${woodLabel})`,
       unit: 'm³',
       qty: parseFloat(state.solidVolumeM3.toFixed(3)),
+      cost: woodRatePerM3,
     });
   }
 
@@ -2039,6 +2086,7 @@ const SeatingCostModal: React.FC<SeatingCostModalProps> = ({
       name: `Plywood ${state.plyThickness}mm`,
       unit: 'sheet',
       qty: state.plySheets,
+      cost: plyRate,
     });
   }
 
@@ -2047,6 +2095,25 @@ const SeatingCostModal: React.FC<SeatingCostModalProps> = ({
       name: `${state.veneerType} veneer`,
       unit: 'm²',
       qty: parseFloat(state.areaM2.toFixed(3)),
+      cost: veneerRate,
+    });
+  }
+
+  if (state.veneerType !== 'None' && state.areaM2 > 0 && finishRatePerM2 > 0) {
+    materials.push({
+      name: `Finish (${state.finishType})`,
+      unit: 'm²',
+      qty: parseFloat(state.areaM2.toFixed(3)),
+      cost: finishRatePerM2,
+    });
+  }
+
+  if (state.upholsteryType !== 'None') {
+    materials.push({
+      name: `Upholstery (${state.upholsteryType})`,
+      unit: 'piece',
+      qty: 1,
+      cost: upholsteryLabor,
     });
   }
 
@@ -2055,6 +2122,7 @@ const SeatingCostModal: React.FC<SeatingCostModalProps> = ({
       name: `Fabric (${state.fabricType} grade)`,
       unit: 'meter',
       qty: state.fabricMeters,
+      cost: fabricRate,
     });
   }
 
@@ -2063,6 +2131,16 @@ const SeatingCostModal: React.FC<SeatingCostModalProps> = ({
       name: 'Steel chassis',
       unit: 'piece',
       qty: 1,
+      cost: pricing.steelChassisCostPerPiece,
+    });
+  }
+
+  if (state.overheadCost > 0) {
+    materials.push({
+      name: 'Overhead',
+      unit: 'EGP',
+      qty: 1,
+      cost: state.overheadCost,
     });
   }
 
@@ -2071,6 +2149,7 @@ const SeatingCostModal: React.FC<SeatingCostModalProps> = ({
       name: 'Labor',
       unit: 'hour',
       qty: state.laborHours,
+      cost: pricing.laborRatePerHour,
     });
   }
 
@@ -2547,19 +2626,27 @@ const TableCostModal: React.FC<TableCostModalProps> = ({
       name: `Table legs wood (${woodLabel})`,
       unit: 'm³',
       qty: parseFloat(legsVolumeM3.toFixed(3)),
+      cost: woodRatePerM3,
     });
   }
 
   if (state.topMaterial === 'MDF16' || state.topMaterial === 'MDF21' || state.topMaterial === 'Blockboard18') {
     const sheets = topAreaM2 / sheetAreaM2;
     let topLabel = 'MDF 16mm';
-    if (state.topMaterial === 'MDF21') topLabel = 'MDF 21mm';
-    else if (state.topMaterial === 'Blockboard18') topLabel = 'Blockboard 18mm';
+    let topRate = pricing.mdf16RatePerSheet;
+    if (state.topMaterial === 'MDF21') {
+      topLabel = 'MDF 21mm';
+      topRate = pricing.mdf21RatePerSheet;
+    } else if (state.topMaterial === 'Blockboard18') {
+      topLabel = 'Blockboard 18mm';
+      topRate = pricing.blockboard18RatePerSheet;
+    }
 
     materials.push({
       name: `Table top (${topLabel})`,
       unit: 'sheet',
       qty: parseFloat(sheets.toFixed(3)),
+      cost: topRate,
     });
   }
 
@@ -2568,15 +2655,18 @@ const TableCostModal: React.FC<TableCostModalProps> = ({
       name: 'Marble top',
       unit: 'm²',
       qty: parseFloat(topAreaM2.toFixed(3)),
+      cost: pricing.marbleRatePerM2,
     });
   }
 
   if (state.topMaterial === 'Glass6' || state.topMaterial === 'Glass10') {
     const thickness = state.topMaterial === 'Glass6' ? '6mm' : '10mm';
+    const glassRate = state.topMaterial === 'Glass6' ? pricing.glass6RatePerM2 : pricing.glass10RatePerM2;
     materials.push({
       name: `Glass top ${thickness}`,
       unit: 'm²',
       qty: parseFloat(topAreaM2.toFixed(3)),
+      cost: glassRate,
     });
   }
 
@@ -2585,6 +2675,25 @@ const TableCostModal: React.FC<TableCostModalProps> = ({
       name: `${state.veneerType} veneer`,
       unit: 'm²',
       qty: parseFloat(topAreaM2.toFixed(3)),
+      cost: veneerRate,
+    });
+  }
+
+  if (isWoodTop && state.veneerType !== 'None' && finishRatePerM2 > 0) {
+    materials.push({
+      name: `Finish (${state.finishType})`,
+      unit: 'm²',
+      qty: parseFloat(topAreaM2.toFixed(3)),
+      cost: finishRatePerM2,
+    });
+  }
+
+  if (state.overheadCost > 0) {
+    materials.push({
+      name: 'Overhead',
+      unit: 'EGP',
+      qty: 1,
+      cost: state.overheadCost,
     });
   }
 
@@ -2593,6 +2702,7 @@ const TableCostModal: React.FC<TableCostModalProps> = ({
       name: 'Labor',
       unit: 'hour',
       qty: state.laborHours,
+      cost: pricing.laborRatePerHour,
     });
   }
 
@@ -2985,6 +3095,7 @@ const SofaCostModal: React.FC<SofaCostModalProps> = ({
       name: `Natural solid wood (${woodLabel})`,
       unit: 'm³',
       qty: parseFloat(woodVolumeM3.toFixed(3)),
+      cost: woodRatePerM3,
     });
   }
 
@@ -2993,6 +3104,25 @@ const SofaCostModal: React.FC<SofaCostModalProps> = ({
       name: `${state.veneerType} veneer`,
       unit: 'm²',
       qty: parseFloat(state.veneerAreaM2.toFixed(3)),
+      cost: veneerRate,
+    });
+  }
+
+  if (state.veneerType !== 'None' && state.veneerAreaM2 > 0 && finishRatePerM2 > 0) {
+    materials.push({
+      name: `Finish (${state.finishType})`,
+      unit: 'm²',
+      qty: parseFloat(state.veneerAreaM2.toFixed(3)),
+      cost: finishRatePerM2,
+    });
+  }
+
+  if (state.upholsteryQuality !== 'None') {
+    materials.push({
+      name: `Upholstery (${state.upholsteryQuality} quality)`,
+      unit: 'meter',
+      qty: state.lengthM,
+      cost: upholsteryPerM,
     });
   }
 
@@ -3001,6 +3131,16 @@ const SofaCostModal: React.FC<SofaCostModalProps> = ({
       name: `Fabric (${state.fabricGrade} grade)`,
       unit: 'meter',
       qty: state.fabricMeters,
+      cost: fabricRate,
+    });
+  }
+
+  if (state.overheadCost > 0) {
+    materials.push({
+      name: 'Overhead',
+      unit: 'EGP',
+      qty: 1,
+      cost: state.overheadCost,
     });
   }
 
@@ -3009,6 +3149,7 @@ const SofaCostModal: React.FC<SofaCostModalProps> = ({
       name: 'Labor',
       unit: 'hour',
       qty: state.laborHours,
+      cost: pricing.laborRatePerHour,
     });
   }
 
@@ -3444,6 +3585,7 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
       name: `Cabinet body core (${bodyLabel})`,
       unit: 'sheet',
       qty: parseFloat(coreSheets.toFixed(3)),
+      cost: bodyCoreRate,
     });
   }
 
@@ -3452,6 +3594,7 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
       name: 'Back (MDF 10mm)',
       unit: 'sheet',
       qty: parseFloat(backSheets.toFixed(3)),
+      cost: pricing.mdf10RatePerSheet,
     });
   }
   if (faceSheets > 0) {
@@ -3466,6 +3609,7 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
       name: `Face panel (${faceLabel})`,
       unit: 'sheet',
       qty: parseFloat(faceSheets.toFixed(3)),
+      cost: faceRatePerSheet,
     });
   }
 
@@ -3474,16 +3618,19 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
       name: 'Drawer boxes PLY 12mm',
       unit: 'sheet',
       qty: parseFloat(drawersPlySheets.toFixed(3)),
+      cost: pricing.ply12RatePerSheet,
     });
     materials.push({
       name: 'Drawer bottoms MDF 10mm',
       unit: 'sheet',
       qty: parseFloat(drawersMdfSheets.toFixed(3)),
+      cost: pricing.mdf10RatePerSheet,
     });
     materials.push({
       name: 'Drawer runners',
       unit: 'pair',
       qty: state.drawersCount,
+      cost: pricing.drawerRunnerRate,
     });
   }
 
@@ -3497,19 +3644,30 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
         name: `Veneer (${state.veneerType})`,
         unit: 'm²',
         qty: parseFloat(veneerAreaM2.toFixed(2)),
+        cost: veneerRateM2,
       });
+
+      let finishRatePerM2 = 0;
+      if (state.finishType === 'PU matte') finishRatePerM2 = pricing.finishPuMatteRatePerM2;
+      else if (state.finishType === 'PU high gloss') finishRatePerM2 = pricing.finishPuHighGlossRatePerM2;
+      else if (state.finishType === 'NC') finishRatePerM2 = pricing.finishNcRatePerM2;
+      else if (state.finishType === 'Oil / stain') finishRatePerM2 = pricing.finishOilRatePerM2;
+
       materials.push({
         name: `Finish (${state.finishType})`,
         unit: 'm²',
         qty: parseFloat(veneerAreaM2.toFixed(2)),
+        cost: finishRatePerM2,
       });
     } else {
       // HPL / LPL
       const veneerSheets = veneerAreaM2 / sheetAreaM2;
+      const laminateRate = state.veneerType === 'HPL' ? pricing.hplRatePerSheet : pricing.lplRatePerSheet;
       materials.push({
         name: `Laminate (${state.veneerType})`,
         unit: 'sheet',
         qty: parseFloat(veneerSheets.toFixed(3)),
+        cost: laminateRate,
       });
     }
   }
@@ -3519,6 +3677,7 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
       name: 'Door hinges',
       unit: 'pcs',
       qty: totalHinges,
+      cost: pricing.doorHingeRate,
     });
   }
 
@@ -3527,7 +3686,8 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
     materials.push({
       name: 'Accessories (handles, screws, etc.)',
       unit: 'EGP',
-      qty: parseFloat(state.accessoriesCost.toFixed(0)),
+      qty: 1,
+      cost: state.accessoriesCost,
     });
   }
 
@@ -3535,23 +3695,19 @@ const CabinetCostModal: React.FC<CabinetCostModalProps> = ({
     materials.push({
       name: 'Overhead',
       unit: 'EGP',
-      qty: parseFloat(state.overheadCost.toFixed(0)),
+      qty: 1,
+      cost: state.overheadCost,
     });
   }
 
-  if (laborCost > 0) {
+  if (state.laborHours > 0) {
     materials.push({
       name: 'Labor',
-      unit: 'EGP',
-      qty: parseFloat(laborCost.toFixed(0)),
+      unit: 'hour',
+      qty: state.laborHours,
+      cost: pricing.laborRatePerHour,
     });
   }
-
-  materials.push({
-    name: 'Profit',
-    unit: 'EGP',
-    qty: parseFloat(profitValue.toFixed(0)),
-  });
 
   // وصف سطر الفاتورة
   const buildDescription = () => {
