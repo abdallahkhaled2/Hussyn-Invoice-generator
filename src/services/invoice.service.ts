@@ -96,8 +96,7 @@ export class InvoiceService {
     };
   }
 
-  static openPreviewWindow(payload: InvoicePayload): void {
-    localStorage.setItem('invoice-preview', JSON.stringify(payload));
-    window.open('/preview?standalone=true', '_blank');
+  static async openPreviewWindow(invoiceId: string): Promise<void> {
+    window.open(`/preview?standalone=true&invoiceId=${invoiceId}`, '_blank');
   }
 }

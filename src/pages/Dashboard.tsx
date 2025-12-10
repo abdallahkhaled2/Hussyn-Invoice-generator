@@ -71,12 +71,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handlePreviewInvoice = async (invoiceId: string) => {
-    const payload = await InvoiceService.createPreviewPayload(invoiceId);
-    if (!payload) {
-      alert('Failed to load invoice details');
-      return;
-    }
-    InvoiceService.openPreviewWindow(payload);
+    await InvoiceService.openPreviewWindow(invoiceId);
   };
 
   if (loading) {

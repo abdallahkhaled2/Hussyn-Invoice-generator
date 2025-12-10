@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import './App.css';
+import { InvoiceService } from './services/invoice.service';
 import type {
   CompanyInfo,
   ClientInfo,
@@ -36,6 +38,9 @@ const emptyMeta: InvoiceMeta = {
 };
 
 const InvoicePreview: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const invoiceId = searchParams.get('invoiceId');
+
   const [data, setData] = useState<PreviewData>({
     company: emptyCompany,
     client: emptyClient,
@@ -47,7 +52,22 @@ const InvoicePreview: React.FC = () => {
   });
 
   useEffect(() => {
-    const loadData = () => {
+    const loadDataFromDatabase = async () => {
+      if (!invoiceId) return false;
+
+      try {
+        const payload = await InvoiceService.createPreviewPayload(invoiceId);
+        if (payload) {
+          setData(payload);
+          return true;
+        }
+      } catch (err) {
+        console.error('Failed to load invoice from database:', err);
+      }
+      return false;
+    };
+
+    const loadDataFromLocalStorage = () => {
       try {
         const draft = localStorage.getItem('invoice-draft');
         const preview = localStorage.getItem('invoice-preview');
@@ -62,12 +82,14 @@ const InvoicePreview: React.FC = () => {
       }
     };
 
-    loadData();
-
-    const interval = setInterval(loadData, 500);
-
-    return () => clearInterval(interval);
-  }, []);
+    if (invoiceId) {
+      loadDataFromDatabase();
+    } else {
+      loadDataFromLocalStorage();
+      const interval = setInterval(loadDataFromLocalStorage, 500);
+      return () => clearInterval(interval);
+    }
+  }, [invoiceId]);
 
   const { company, client, meta, items, vatRate, discount, notes } = data;
 
