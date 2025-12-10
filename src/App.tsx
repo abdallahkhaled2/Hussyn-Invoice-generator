@@ -402,6 +402,7 @@ const App: React.FC = () => {
               unitPrice: Math.round(result.price),
               description: result.description,
               dimensions: result.dimensions,
+              materials: result.materials ?? item.materials,
             }
           : item
       )
@@ -418,6 +419,7 @@ const App: React.FC = () => {
               ...item,
               unitPrice: Math.round(result.price),
               description: result.description,
+              materials: result.materials ?? item.materials,
             }
           : item
       )
@@ -453,6 +455,7 @@ const App: React.FC = () => {
               unitPrice: Math.round(result.price),
               description: result.description,
               dimensions: result.dimensions || item.dimensions,
+              materials: result.materials ?? item.materials,
             }
           : item
       )
@@ -469,6 +472,7 @@ const App: React.FC = () => {
               ...item,
               unitPrice: Math.round(result.price),
               description: result.description,
+              materials: result.materials ?? item.materials,
             }
           : item
       )
