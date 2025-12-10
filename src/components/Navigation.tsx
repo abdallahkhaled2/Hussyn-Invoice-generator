@@ -33,20 +33,6 @@ const Navigation: React.FC = () => {
           Create Invoice
         </Link>
         <Link
-          to="/dashboard"
-          style={{
-            padding: '16px 20px',
-            textDecoration: 'none',
-            color: isActive('/dashboard') ? '#38bdf8' : '#e5e7eb',
-            borderBottom: isActive('/dashboard') ? '2px solid #38bdf8' : '2px solid transparent',
-            fontSize: 14,
-            fontWeight: 500,
-            transition: 'all 0.2s',
-          }}
-        >
-          Dashboard
-        </Link>
-        <Link
           to="/preview"
           style={{
             padding: '16px 20px',
@@ -59,6 +45,20 @@ const Navigation: React.FC = () => {
           }}
         >
           Preview
+        </Link>
+        <Link
+          to="/dashboard"
+          style={{
+            padding: '16px 20px',
+            textDecoration: 'none',
+            color: isActive('/dashboard') ? '#38bdf8' : '#e5e7eb',
+            borderBottom: isActive('/dashboard') ? '2px solid #38bdf8' : '2px solid transparent',
+            fontSize: 14,
+            fontWeight: 500,
+            transition: 'all 0.2s',
+          }}
+        >
+          Dashboard
         </Link>
       </div>
     </nav>
