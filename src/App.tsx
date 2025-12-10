@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ChangeEvent } from 'react';
 import './App.css';
 import { saveInvoice as saveToDatabase } from './lib/invoiceService';
+import { ToastContainer, useToast } from './components/Toast';
 import type {
   ItemCategory,
   CompanyInfo,
@@ -97,6 +98,8 @@ type CostResult = {
 /* ================= MAIN APP ================= */
 
 const App: React.FC = () => {
+  const toast = useToast();
+
   // ===== Company ثابت =====
   const [company] = useState<CompanyInfo>({
     name: 'Meduza Studio Works',
@@ -317,7 +320,7 @@ const App: React.FC = () => {
   const saveInvoice = () => {
     const payload = buildPayload();
     localStorage.setItem('saved-invoice', JSON.stringify(payload));
-    alert('Invoice saved locally ✅');
+    toast.success('Invoice Saved', 'Invoice saved locally');
   };
 
   const clearFormSilently = () => {
@@ -361,10 +364,14 @@ const App: React.FC = () => {
     const result = await saveToDatabase(payload);
 
     if (result.success) {
-      alert(`Invoice saved to database successfully! ✅\n\nInvoice Number: ${result.invoiceNo}\n\nView analytics in the Dashboard tab.`);
+      toast.success(
+        `Invoice ${result.invoiceNo} Saved!`,
+        'View analytics in the Dashboard tab.',
+        6000
+      );
       clearFormSilently();
     } else {
-      alert('Failed to save invoice to database. Check the browser console for details.');
+      toast.error('Save Failed', 'Failed to save invoice to database. Check the console for details.');
       console.error('Save failed:', result.error);
     }
   };
@@ -372,7 +379,7 @@ const App: React.FC = () => {
   const loadInvoice = () => {
     const raw = localStorage.getItem('saved-invoice');
     if (!raw) {
-      alert('No saved invoice found.');
+      toast.warning('No Saved Invoice', 'No locally saved invoice found.');
       return;
     }
     try {
@@ -387,8 +394,9 @@ const App: React.FC = () => {
       setVatRate(data.vatRate);
       setDiscount(data.discount);
       setNotes(data.notes);
+      toast.success('Invoice Loaded', 'Invoice data restored from local storage.');
     } catch {
-      alert('Saved invoice is corrupted.');
+      toast.error('Load Failed', 'Saved invoice data is corrupted.');
     }
   };
 
@@ -482,7 +490,7 @@ const App: React.FC = () => {
 
   const validateDimensions = (item: InvoiceItem) => {
     if (!item.dimensions || !item.dimensions.trim()) {
-      alert('Please enter item dimensions first (H × W × T cm).');
+      toast.warning('Dimensions Required', 'Please enter item dimensions first (H x W x T cm).');
       return false;
     }
     return true;
@@ -520,7 +528,8 @@ const App: React.FC = () => {
       setCabinetModalItemId(item.id);
       setCabinetModalOpen(true);
     } else {
-      alert(
+      toast.info(
+        'Costing Unavailable',
         'Costing is available for doors, seating, tables, sofas and cabinets.'
       );
     }
@@ -529,6 +538,7 @@ const App: React.FC = () => {
   // ===== UI =====
   return (
     <div className="app">
+      <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
       <div className="form-shell">
         <div
           style={{

@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getInvoiceDetails } from '../lib/invoiceService';
 import { CURRENCY, CURRENCY_LOCALE } from '../constants/company.constants';
+import { ToastContainer, useToast } from '../components/Toast';
 
 const InvoiceDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [invoiceData, setInvoiceData] = useState<any>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const loadInvoice = async () => {
@@ -20,8 +23,9 @@ const InvoiceDetails: React.FC = () => {
       if (result.success && result.data) {
         setInvoiceData(result.data);
       } else {
-        alert('Failed to load invoice details');
-        navigate('/dashboard');
+        setLoadError(true);
+        toast.error('Load Failed', 'Failed to load invoice details.');
+        setTimeout(() => navigate('/dashboard'), 2000);
       }
       setLoading(false);
     };
@@ -29,7 +33,7 @@ const InvoiceDetails: React.FC = () => {
     loadInvoice();
   }, [id, navigate]);
 
-  if (loading) {
+  if (loading || loadError) {
     return (
       <div
         style={{
@@ -42,7 +46,8 @@ const InvoiceDetails: React.FC = () => {
           padding: 20,
         }}
       >
-        Loading invoice details...
+        <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
+        {loading ? 'Loading invoice details...' : 'Redirecting to dashboard...'}
       </div>
     );
   }

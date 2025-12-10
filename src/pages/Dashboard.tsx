@@ -21,6 +21,7 @@ import {
   MaterialBreakdownTable,
   InvoicesTable,
 } from '../components/dashboard';
+import { ToastContainer, useToast } from '../components/Toast';
 import { formatCurrency, formatNumber } from '../utils/format.utils';
 import type { TimeRange } from '../types/dashboard.types';
 
@@ -37,6 +38,7 @@ ChartJS.register(
 );
 
 const Dashboard: React.FC = () => {
+  const toast = useToast();
   const [timeRange, setTimeRange] = useState<TimeRange>('30days');
   const [selectedMaterialInvoiceId, setSelectedMaterialInvoiceId] = useState<string>('');
 
@@ -62,7 +64,7 @@ const Dashboard: React.FC = () => {
     if (success) {
       window.location.reload();
     } else {
-      alert('Failed to update status');
+      toast.error('Update Failed', 'Failed to update invoice status.');
     }
   };
 
@@ -156,6 +158,7 @@ const Dashboard: React.FC = () => {
         padding: '40px 20px',
       }}
     >
+      <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <h1 style={{ margin: 0, color: '#e5e7eb', fontSize: 32, fontWeight: 700 }}>
