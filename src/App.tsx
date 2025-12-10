@@ -189,11 +189,7 @@ const App: React.FC = () => {
   // ===== Items =====
   const [items, setItems] = useState<InvoiceItem[]>([]);
 
-  const [notes, setNotes] = useState<string>(
-    '- Production lead time: 25–30 working days from advance payment.\n' +
-      '- Delivery & installation inside Cairo & Giza are included.\n' +
-      '- Colors and finishes may vary slightly due to natural wood characteristics.'
-  );
+  const [notes, setNotes] = useState<string>('');
 
   const [pricingConfig, setPricingConfig] = useState<PricingConfig>({
     mouskiRate: 24000,
