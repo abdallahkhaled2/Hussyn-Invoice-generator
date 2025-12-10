@@ -269,10 +269,37 @@ const App: React.FC = () => {
     null
   );
 
-  // Clear preview data on mount
   useEffect(() => {
     localStorage.removeItem('invoice-preview');
+
+    const draft = localStorage.getItem('invoice-draft');
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.client) setClient(parsed.client);
+        if (parsed.meta) setMeta(parsed.meta);
+        if (parsed.items) setItems(parsed.items);
+        if (parsed.vatRate !== undefined) setVatRate(parsed.vatRate);
+        if (parsed.discount !== undefined) setDiscount(parsed.discount);
+        if (parsed.notes !== undefined) setNotes(parsed.notes);
+      } catch (err) {
+        console.error('Failed to load draft:', err);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    const payload: InvoicePayload = {
+      company,
+      client,
+      meta,
+      items,
+      vatRate,
+      discount,
+      notes,
+    };
+    localStorage.setItem('invoice-draft', JSON.stringify(payload));
+  }, [company, client, meta, items, vatRate, discount, notes]);
 
   // ===== Handlers =====
   const updateItem = (id: number, field: keyof InvoiceItem, value: string) => {

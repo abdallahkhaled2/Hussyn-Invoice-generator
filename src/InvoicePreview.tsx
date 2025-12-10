@@ -53,14 +53,26 @@ const InvoicePreview: React.FC = () => {
   });
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('invoice-preview');
-      if (!raw) return;
-      const parsed: PreviewData = JSON.parse(raw);
-      setData(parsed);
-    } catch (err) {
-      console.error('Failed to load invoice-preview from localStorage', err);
-    }
+    const loadData = () => {
+      try {
+        const draft = localStorage.getItem('invoice-draft');
+        const preview = localStorage.getItem('invoice-preview');
+
+        const raw = preview || draft;
+        if (!raw) return;
+
+        const parsed: PreviewData = JSON.parse(raw);
+        setData(parsed);
+      } catch (err) {
+        console.error('Failed to load invoice data from localStorage', err);
+      }
+    };
+
+    loadData();
+
+    const interval = setInterval(loadData, 500);
+
+    return () => clearInterval(interval);
   }, []);
 
   const { company, client, meta, items, vatRate, discount, notes } = data;
