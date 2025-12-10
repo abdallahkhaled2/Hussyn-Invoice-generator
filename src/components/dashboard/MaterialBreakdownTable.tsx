@@ -16,9 +16,50 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
   selectedInvoiceId,
   onInvoiceSelect,
 }) => {
+  const totalCost = materials.reduce((sum, m) => sum + m.total_cost, 0);
+
+  const selectedInvoice = invoices.find((inv) => inv.id === selectedInvoiceId);
+
+  const handleExport = () => {
+    if (materials.length === 0) return;
+
+    const lines: string[] = [];
+    const invoiceLabel = selectedInvoice
+      ? `${selectedInvoice.invoice_no} - ${selectedInvoice.project_name}`
+      : 'All Invoices';
+
+    lines.push(`Material Breakdown - ${invoiceLabel}`);
+    lines.push('');
+    lines.push(['Material', 'Total Quantity', 'Unit', 'Unit Cost', 'Total Cost', 'Used In'].join('\t'));
+
+    materials.forEach((m) => {
+      lines.push(
+        [
+          m.material_name,
+          m.total_qty.toFixed(2),
+          m.unit,
+          m.unit_cost.toFixed(2),
+          m.total_cost.toFixed(2),
+          `${m.usage_count} items`,
+        ].join('\t')
+      );
+    });
+
+    lines.push('');
+    lines.push(['TOTAL', '', '', '', totalCost.toFixed(2), ''].join('\t'));
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/tab-separated-values' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `material-breakdown-${selectedInvoice?.invoice_no || 'all'}.tsv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ padding: '16px 0' }}>
-      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <label style={{ color: '#9ca3af', fontSize: 14 }}>Select Invoice:</label>
         <select
           value={selectedInvoiceId}
@@ -54,6 +95,30 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
             }}
           >
             Clear
+          </button>
+        )}
+        {materials.length > 0 && (
+          <button
+            onClick={handleExport}
+            style={{
+              marginLeft: 'auto',
+              padding: '8px 16px',
+              background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+              border: 'none',
+              borderRadius: 6,
+              color: '#fff',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Export
           </button>
         )}
       </div>
@@ -114,6 +179,24 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr style={{ borderTop: '2px solid #374151', background: 'rgba(6, 95, 70, 0.15)' }}>
+              <td style={{ padding: '14px 0', color: '#e5e7eb', fontSize: 15, fontWeight: 700 }}>
+                TOTAL
+              </td>
+              <td style={{ padding: '14px 0' }}></td>
+              <td style={{ padding: '14px 0' }}></td>
+              <td style={{ padding: '14px 0' }}></td>
+              <td style={{ padding: '14px 0', color: '#34d399', fontSize: 16, textAlign: 'right', fontWeight: 700 }}>
+                {totalCost.toLocaleString(CURRENCY_LOCALE, {
+                  style: 'currency',
+                  currency: CURRENCY,
+                  minimumFractionDigits: 0,
+                })}
+              </td>
+              <td style={{ padding: '14px 0' }}></td>
+            </tr>
+          </tfoot>
         </table>
       ) : (
         <div style={{ textAlign: 'center', padding: '40px 0', color: '#6b7280' }}>

@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react';
 import './App.css';
 import { saveInvoice as saveToDatabase } from './lib/invoiceService';
 import { ToastContainer, useToast } from './components/Toast';
+import { ConfirmModal } from './components/ConfirmModal';
 import type {
   ItemCategory,
   CompanyInfo,
@@ -214,6 +215,9 @@ const App: React.FC = () => {
     null
   );
 
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+
   useEffect(() => {
     localStorage.removeItem('invoice-preview');
 
@@ -348,17 +352,20 @@ const App: React.FC = () => {
   };
 
   const clearForm = () => {
-    const confirmed = window.confirm('Are you sure you want to clear all invoice data?');
-    if (!confirmed) return;
+    setClearConfirmOpen(true);
+  };
+
+  const handleClearConfirm = () => {
+    setClearConfirmOpen(false);
     clearFormSilently();
   };
 
-  const handleSaveToDatabase = async () => {
-    const confirmed = window.confirm('Are you sure you want to add this invoice into the system?');
+  const handleSubmitClick = () => {
+    setSubmitConfirmOpen(true);
+  };
 
-    if (!confirmed) {
-      return;
-    }
+  const handleSubmitConfirm = async () => {
+    setSubmitConfirmOpen(false);
 
     const payload = buildPayload();
     const result = await saveToDatabase(payload);
@@ -539,6 +546,26 @@ const App: React.FC = () => {
   return (
     <div className="app">
       <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
+      <ConfirmModal
+        isOpen={clearConfirmOpen}
+        title="Clear Invoice"
+        message="Are you sure you want to clear all invoice data? This action cannot be undone."
+        confirmText="Clear"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        onConfirm={handleClearConfirm}
+        onCancel={() => setClearConfirmOpen(false)}
+      />
+      <ConfirmModal
+        isOpen={submitConfirmOpen}
+        title="Submit Invoice"
+        message="Are you sure you want to add this invoice into the system? The invoice will be saved to the database."
+        confirmText="Submit"
+        cancelText="Cancel"
+        confirmVariant="primary"
+        onConfirm={handleSubmitConfirm}
+        onCancel={() => setSubmitConfirmOpen(false)}
+      />
       <div className="form-shell">
         <div
           style={{
@@ -864,7 +891,7 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        <button className="btn-primary" onClick={handleSaveToDatabase}>
+        <button className="btn-primary" onClick={handleSubmitClick}>
           Submit
         </button>
       </div>
