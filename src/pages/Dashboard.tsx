@@ -356,6 +356,61 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handlePreviewInvoice = async (invoiceId: string) => {
+    const result = await getInvoiceDetails(invoiceId);
+    if (!result.success || !result.data) {
+      alert('Failed to load invoice details');
+      return;
+    }
+
+    const { invoice, items } = result.data;
+
+    const previewPayload = {
+      company: {
+        name: 'Meduza Studio Works',
+        logoUrl: '/Company%20Logo.svg',
+        address: 'Tolon, El Sayeda Zeinab, Cairo , Egypt',
+        phone: '+20 1146700228 / +20 1018705558',
+        email: 'info@meduzafurniture.com',
+      },
+      client: {
+        name: invoice.clients?.name || 'Client Name',
+        company: invoice.clients?.company || '',
+        address: invoice.clients?.billing_address || '',
+        phone: invoice.clients?.phone || '',
+        email: invoice.clients?.email || '',
+        siteAddress: invoice.clients?.site_address || '',
+      },
+      meta: {
+        invoiceNo: invoice.invoice_no || '',
+        date: invoice.invoice_date || '',
+        dueDate: invoice.due_date || '',
+        projectName: invoice.project_name || '',
+      },
+      items: items.map((item: any) => ({
+        id: item.id,
+        category: item.category || 'Custom furniture',
+        code: item.code || '',
+        description: item.description || '',
+        dimensions: item.dimensions || '',
+        qty: item.qty || 1,
+        unitPrice: Number(item.unit_price) || 0,
+        image: item.image_url || undefined,
+        materials: (item.materials || []).map((mat: any) => ({
+          name: mat.material_name,
+          unit: mat.unit,
+          qty: mat.qty_per_item,
+        })),
+      })),
+      vatRate: invoice.vat_rate || 0,
+      discount: invoice.discount || 0,
+      notes: invoice.notes || '',
+    };
+
+    localStorage.setItem('invoice-preview', JSON.stringify(previewPayload));
+    window.open('/preview', '_blank');
+  };
+
   const handleCloseModal = () => {
     setShowInvoiceModal(false);
     setSelectedInvoice(null);
@@ -696,21 +751,38 @@ const Dashboard: React.FC = () => {
                         </span>
                       </td>
                       <td style={{ padding: '12px 0', textAlign: 'center' }}>
-                        <button
-                          onClick={() => handleViewInvoice(invoice.id)}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: 6,
-                            border: '1px solid #38bdf8',
-                            background: 'transparent',
-                            color: '#38bdf8',
-                            fontSize: 12,
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          View Details
-                        </button>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                          <button
+                            onClick={() => handleViewInvoice(invoice.id)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: 6,
+                              border: '1px solid #38bdf8',
+                              background: 'transparent',
+                              color: '#38bdf8',
+                              fontSize: 12,
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            View Details
+                          </button>
+                          <button
+                            onClick={() => handlePreviewInvoice(invoice.id)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: 6,
+                              border: '1px solid #34d399',
+                              background: 'transparent',
+                              color: '#34d399',
+                              fontSize: 12,
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Preview
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
