@@ -1,6 +1,27 @@
 import { supabase } from './supabase';
 import type { InvoicePayload } from '../App';
 
+export const generateInvoiceNumber = async (): Promise<string> => {
+  const currentYear = new Date().getFullYear();
+  const prefix = `INV-${currentYear}-`;
+
+  const { data: latestInvoice } = await supabase
+    .from('invoices')
+    .select('invoice_no')
+    .like('invoice_no', `${prefix}%`)
+    .order('invoice_no', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (latestInvoice) {
+    const lastNumber = parseInt(latestInvoice.invoice_no.split('-')[2]);
+    const nextNumber = lastNumber + 1;
+    return `${prefix}${String(nextNumber).padStart(3, '0')}`;
+  }
+
+  return `${prefix}001`;
+};
+
 export const saveInvoice = async (payload: InvoicePayload) => {
   try {
     const { client, meta, items, vatRate, discount, notes } = payload;
@@ -21,17 +42,6 @@ export const saveInvoice = async (payload: InvoicePayload) => {
 
       if (existingClient) {
         clientId = existingClient.id;
-
-        await supabase
-          .from('clients')
-          .update({
-            name: client.name,
-            company: client.company,
-            address: client.address,
-            phone: client.phone,
-            site_address: client.siteAddress,
-          })
-          .eq('id', clientId);
       } else {
         const { data: newClient, error: clientError } = await supabase
           .from('clients')
@@ -51,61 +61,29 @@ export const saveInvoice = async (payload: InvoicePayload) => {
       }
     }
 
-    const { data: existingInvoice } = await supabase
+    const invoiceNo = await generateInvoiceNumber();
+
+    const { data: newInvoice, error: invoiceError } = await supabase
       .from('invoices')
-      .select('id')
-      .eq('invoice_no', meta.invoiceNo)
-      .maybeSingle();
+      .insert({
+        invoice_no: invoiceNo,
+        client_id: clientId,
+        project_name: meta.projectName,
+        invoice_date: meta.date,
+        due_date: meta.dueDate || null,
+        subtotal,
+        discount,
+        vat_rate: vatRate,
+        vat_amount: vatAmount,
+        total,
+        notes,
+        status: 'draft',
+      })
+      .select()
+      .single();
 
-    let invoiceId: string;
-
-    if (existingInvoice) {
-      invoiceId = existingInvoice.id;
-
-      await supabase
-        .from('invoices')
-        .update({
-          client_id: clientId,
-          project_name: meta.projectName,
-          invoice_date: meta.date,
-          due_date: meta.dueDate || null,
-          subtotal,
-          discount,
-          vat_rate: vatRate,
-          vat_amount: vatAmount,
-          total,
-          notes,
-          status: 'draft',
-        })
-        .eq('id', invoiceId);
-
-      await supabase
-        .from('invoice_items')
-        .delete()
-        .eq('invoice_id', invoiceId);
-    } else {
-      const { data: newInvoice, error: invoiceError } = await supabase
-        .from('invoices')
-        .insert({
-          invoice_no: meta.invoiceNo,
-          client_id: clientId,
-          project_name: meta.projectName,
-          invoice_date: meta.date,
-          due_date: meta.dueDate || null,
-          subtotal,
-          discount,
-          vat_rate: vatRate,
-          vat_amount: vatAmount,
-          total,
-          notes,
-          status: 'draft',
-        })
-        .select()
-        .single();
-
-      if (invoiceError) throw invoiceError;
-      invoiceId = newInvoice.id;
-    }
+    if (invoiceError) throw invoiceError;
+    const invoiceId = newInvoice.id;
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -147,7 +125,7 @@ export const saveInvoice = async (payload: InvoicePayload) => {
       }
     }
 
-    return { success: true, invoiceId };
+    return { success: true, invoiceId, invoiceNo };
   } catch (error: any) {
     console.error('Error saving invoice:', error);
     console.error('Error details:', {

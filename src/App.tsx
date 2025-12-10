@@ -176,7 +176,7 @@ const App: React.FC = () => {
 
   // ===== Meta =====
   const [meta, setMeta] = useState<InvoiceMeta>({
-    invoiceNo: 'INV-2025-001',
+    invoiceNo: '',
     date: new Date().toISOString().slice(0, 10),
     dueDate: '',
     projectName: 'Project Name',
@@ -372,8 +372,9 @@ const App: React.FC = () => {
     const result = await saveToDatabase(payload);
 
     if (result.success) {
-      alert('Invoice saved to database successfully! ✅\n\nView analytics in the Dashboard tab.');
-      localStorage.setItem('invoice-preview', JSON.stringify(payload));
+      alert(`Invoice saved to database successfully! ✅\n\nInvoice Number: ${result.invoiceNo}\n\nView analytics in the Dashboard tab.`);
+      setMeta({ ...meta, invoiceNo: result.invoiceNo || '' });
+      localStorage.setItem('invoice-preview', JSON.stringify({ ...payload, meta: { ...payload.meta, invoiceNo: result.invoiceNo } }));
     } else {
       alert('Failed to save invoice to database. Check the browser console for details.');
       console.error('Save failed:', result.error);
@@ -594,11 +595,6 @@ const App: React.FC = () => {
         {/* Invoice meta */}
         <section className="card">
           <h2 className="card-title">Invoice Details</h2>
-          <TextInput
-            label="Invoice No."
-            value={meta.invoiceNo}
-            onChange={(v) => setMeta({ ...meta, invoiceNo: v })}
-          />
           <TextInput
             label="Date"
             type="date"
