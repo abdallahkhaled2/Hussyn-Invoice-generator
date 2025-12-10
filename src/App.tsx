@@ -231,6 +231,7 @@ const App: React.FC = () => {
         if (parsed.vatRate !== undefined) setVatRate(parsed.vatRate);
         if (parsed.discount !== undefined) setDiscount(parsed.discount);
         if (parsed.notes !== undefined) setNotes(parsed.notes);
+        if (parsed.pricingConfig) setPricingConfig(parsed.pricingConfig);
       } catch (err) {
         console.error('Failed to load draft:', err);
       }
@@ -238,7 +239,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const payload: InvoicePayload = {
+    const payload = {
       company,
       client,
       meta,
@@ -246,9 +247,10 @@ const App: React.FC = () => {
       vatRate,
       discount,
       notes,
+      pricingConfig,
     };
     localStorage.setItem('invoice-draft', JSON.stringify(payload));
-  }, [company, client, meta, items, vatRate, discount, notes]);
+  }, [company, client, meta, items, vatRate, discount, notes, pricingConfig]);
 
   // ===== Handlers =====
   const updateItem = (id: string | number, field: keyof InvoiceItem, value: string) => {

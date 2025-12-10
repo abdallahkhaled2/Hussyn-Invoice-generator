@@ -28,9 +28,16 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
       ? `${selectedInvoice.invoice_no} - ${selectedInvoice.project_name}`
       : 'All Invoices';
 
+    const escapeCSV = (val: string) => {
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`;
+      }
+      return val;
+    };
+
     lines.push(`Material Breakdown - ${invoiceLabel}`);
     lines.push('');
-    lines.push(['Material', 'Total Quantity', 'Unit', 'Unit Cost', 'Total Cost', 'Used In'].join('\t'));
+    lines.push(['Material', 'Total Quantity', 'Unit', 'Unit Cost', 'Total Cost', 'Used In'].map(escapeCSV).join(','));
 
     materials.forEach((m) => {
       lines.push(
@@ -41,18 +48,18 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
           m.unit_cost.toFixed(2),
           m.total_cost.toFixed(2),
           `${m.usage_count} items`,
-        ].join('\t')
+        ].map(escapeCSV).join(',')
       );
     });
 
     lines.push('');
-    lines.push(['TOTAL', '', '', '', totalCost.toFixed(2), ''].join('\t'));
+    lines.push(['TOTAL', '', '', '', totalCost.toFixed(2), ''].join(','));
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/tab-separated-values' });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `material-breakdown-${selectedInvoice?.invoice_no || 'all'}.tsv`;
+    a.download = `material-breakdown-${selectedInvoice?.invoice_no || 'all'}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

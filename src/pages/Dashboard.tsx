@@ -51,6 +51,8 @@ const Dashboard: React.FC = () => {
     topClients,
     invoices,
     loadMaterialsForInvoice,
+    updateLocalInvoiceStatus,
+    refetchData,
   } = useDashboardData(timeRange);
 
   useEffect(() => {
@@ -60,11 +62,15 @@ const Dashboard: React.FC = () => {
   }, [selectedMaterialInvoiceId]);
 
   const handleStatusChange = async (invoiceId: string, newStatus: string) => {
+    updateLocalInvoiceStatus(invoiceId, newStatus);
+
     const success = await InvoiceService.updateInvoiceStatus(invoiceId, newStatus);
     if (success) {
-      window.location.reload();
+      toast.success('Status Updated', `Invoice status changed to "${newStatus}".`);
+      refetchData();
     } else {
       toast.error('Update Failed', 'Failed to update invoice status.');
+      refetchData();
     }
   };
 

@@ -62,6 +62,18 @@ export const useDashboardData = (timeRange: TimeRange) => {
     }
   };
 
+  const updateLocalInvoiceStatus = (invoiceId: string, newStatus: string) => {
+    setInvoices((prev) =>
+      prev.map((inv) =>
+        inv.id === invoiceId ? { ...inv, status: newStatus } : inv
+      )
+    );
+  };
+
+  const refetchData = async () => {
+    await Promise.all([loadAnalytics(), loadInvoices()]);
+  };
+
   useEffect(() => {
     loadAnalytics();
     loadInvoices();
@@ -76,5 +88,7 @@ export const useDashboardData = (timeRange: TimeRange) => {
     topClients,
     invoices,
     loadMaterialsForInvoice,
+    updateLocalInvoiceStatus,
+    refetchData,
   };
 };
