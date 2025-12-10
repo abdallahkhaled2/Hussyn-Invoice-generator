@@ -4,6 +4,7 @@ import Navigation from './components/Navigation';
 import App from './App';
 import Dashboard from './pages/Dashboard';
 import InvoicePreview from './InvoicePreview';
+import InvoiceDetails from './pages/InvoiceDetails';
 
 const RouterContent: React.FC = () => {
   const location = useLocation();
@@ -18,6 +19,7 @@ const RouterContent: React.FC = () => {
         <Route path="/" element={<App />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/preview" element={<InvoicePreview />} />
+        <Route path="/invoice/:id" element={<InvoiceDetails />} />
       </Routes>
     </>
   );

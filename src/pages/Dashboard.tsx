@@ -67,7 +67,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleViewInvoice = (invoiceId: string) => {
-    window.location.href = `/?id=${invoiceId}`;
+    window.location.href = `/invoice/${invoiceId}`;
   };
 
   const handlePreviewInvoice = async (invoiceId: string) => {

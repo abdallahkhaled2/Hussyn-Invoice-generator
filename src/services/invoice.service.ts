@@ -64,7 +64,7 @@ export class InvoiceService {
       client: {
         name: invoice.clients?.name || 'Client Name',
         company: invoice.clients?.company || '',
-        address: invoice.clients?.billing_address || '',
+        address: invoice.clients?.address || '',
         phone: invoice.clients?.phone || '',
         email: invoice.clients?.email || '',
         siteAddress: invoice.clients?.site_address || '',

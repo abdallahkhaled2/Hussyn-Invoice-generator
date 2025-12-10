@@ -179,7 +179,8 @@ export const getInvoiceDetails = async (invoiceId: string) => {
           company,
           address,
           phone,
-          email
+          email,
+          site_address
         )
       `)
       .eq('id', invoiceId)
