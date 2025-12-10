@@ -1,5 +1,7 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { useState } from 'react';
+import type { ChangeEvent } from 'react';
 import './App.css';
+import { saveInvoice as saveToDatabase } from './lib/invoiceService';
 
 type MaterialRow = {
   name: string;
@@ -363,6 +365,19 @@ const App: React.FC = () => {
     const payload = buildPayload();
     localStorage.setItem('saved-invoice', JSON.stringify(payload));
     alert('Invoice saved locally ✅');
+  };
+
+  const handleSaveToDatabase = async () => {
+    const payload = buildPayload();
+    const result = await saveToDatabase(payload);
+
+    if (result.success) {
+      alert('Invoice saved to database successfully! ✅');
+      localStorage.setItem('invoice-preview', JSON.stringify(payload));
+    } else {
+      alert('Failed to save invoice to database. Please check your Supabase configuration.');
+      console.error(result.error);
+    }
   };
 
   const loadInvoice = () => {
@@ -841,12 +856,16 @@ const App: React.FC = () => {
 
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
           <button className="btn-outline" onClick={saveInvoice}>
-            Save Invoice
+            Save Locally
           </button>
           <button className="btn-outline" onClick={loadInvoice}>
-            Load Invoice
+            Load Local
           </button>
         </div>
+
+        <button className="btn-primary" onClick={handleSaveToDatabase} style={{ marginBottom: 8 }}>
+          Save to Database
+        </button>
 
         <button className="btn-primary" onClick={handlePreview}>
           Preview Invoice (New Window)

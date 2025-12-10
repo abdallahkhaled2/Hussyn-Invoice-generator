@@ -1,13 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
-import InvoicePreview from './InvoicePreview';
+import Router from './Router';
 import './index.css';
-
-const path = window.location.pathname;
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    {path === '/preview' ? <InvoicePreview /> : <App />}
+    <Router />
   </React.StrictMode>
 );
