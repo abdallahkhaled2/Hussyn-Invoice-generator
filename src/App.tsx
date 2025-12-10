@@ -390,8 +390,28 @@ const App: React.FC = () => {
 
     if (result.success) {
       alert(`Invoice saved to database successfully! ✅\n\nInvoice Number: ${result.invoiceNo}\n\nView analytics in the Dashboard tab.`);
-      setMeta({ ...meta, invoiceNo: result.invoiceNo || '' });
-      localStorage.setItem('invoice-preview', JSON.stringify({ ...payload, meta: { ...payload.meta, invoiceNo: result.invoiceNo } }));
+
+      localStorage.removeItem('invoice-draft');
+      localStorage.removeItem('invoice-preview');
+
+      setClient({
+        name: 'Client Name',
+        company: 'Client Company',
+        address: 'Client Billing Address',
+        phone: '+20 100 000 0000',
+        email: 'client@example.com',
+        siteAddress: 'Site / Delivery Address',
+      });
+      setMeta({
+        invoiceNo: '',
+        date: new Date().toISOString().slice(0, 10),
+        dueDate: '',
+        projectName: 'Project Name',
+      });
+      setItems([]);
+      setVatRate(14);
+      setDiscount(0);
+      setNotes('');
     } else {
       alert('Failed to save invoice to database. Check the browser console for details.');
       console.error('Save failed:', result.error);
