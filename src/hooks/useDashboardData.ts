@@ -56,12 +56,36 @@ export const useDashboardData = (timeRange: TimeRange) => {
     }
   };
 
-  const loadMaterialsForInvoice = async (invoiceId: string) => {
+  const loadMaterialsForInvoices = async (invoiceIds: string[]) => {
     try {
-      const materials = await AnalyticsService.getMaterialsForInvoice(invoiceId);
-      setMaterialBreakdown(materials);
+      if (invoiceIds.length === 0) {
+        setMaterialBreakdown([]);
+        return;
+      }
+      if (invoiceIds.length === 1) {
+        const materials = await AnalyticsService.getMaterialsForInvoice(invoiceIds[0]);
+        setMaterialBreakdown(materials);
+      } else {
+        const allMaterials: MaterialBreakdown[] = [];
+        for (const invoiceId of invoiceIds) {
+          const materials = await AnalyticsService.getMaterialsForInvoice(invoiceId);
+          materials.forEach((mat) => {
+            const existing = allMaterials.find(
+              (m) => m.material_name === mat.material_name && m.unit === mat.unit
+            );
+            if (existing) {
+              existing.total_qty += mat.total_qty;
+              existing.total_cost += mat.total_cost;
+              existing.usage_count += mat.usage_count;
+            } else {
+              allMaterials.push({ ...mat });
+            }
+          });
+        }
+        setMaterialBreakdown(allMaterials.sort((a, b) => b.total_cost - a.total_cost));
+      }
     } catch (error) {
-      console.error('Error loading materials for invoice:', error);
+      console.error('Error loading materials for invoices:', error);
     }
   };
 
@@ -91,7 +115,7 @@ export const useDashboardData = (timeRange: TimeRange) => {
     topClients,
     invoices,
     materialBreakdownTotals,
-    loadMaterialsForInvoice,
+    loadMaterialsForInvoices,
     updateLocalInvoiceStatus,
     refetchData,
   };

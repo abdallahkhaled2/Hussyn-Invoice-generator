@@ -9,6 +9,7 @@ interface InvoicesTableProps {
   onStatusChange: (invoiceId: string, status: string) => void;
   onViewInvoice: (invoiceId: string) => void;
   onPreviewInvoice: (invoiceId: string) => void;
+  onDeleteInvoice?: (invoiceId: string, password: string) => Promise<boolean>;
 }
 
 export const InvoicesTable: React.FC<InvoicesTableProps> = ({
@@ -17,19 +18,24 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
   onStatusChange,
   onViewInvoice,
   onPreviewInvoice,
+  onDeleteInvoice,
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteInvoiceId, setDeleteInvoiceId] = useState<string | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const filteredInvoices = useMemo(() => {
     return invoices.filter((invoice) => {
       const matchesSearch =
         !searchTerm ||
         invoice.invoice_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        invoice.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        invoice.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
+        invoice.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesDateFrom = !dateFrom || invoice.invoice_date >= dateFrom;
       const matchesDateTo = !dateTo || invoice.invoice_date <= dateTo;
@@ -99,7 +105,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
           sellingPrice.toFixed(2),
           margin.toFixed(2),
           invoice.status,
-          invoice.order_class || 'B2B',
+          invoice.order_class || '',
         ]
           .map(escapeCSV)
           .join(',')
@@ -113,6 +119,40 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
         : `invoices-all-${new Date().toISOString().split('T')[0]}.csv`;
 
     downloadCSV(filename, csvContent);
+  };
+
+  const openDeleteModal = (invoiceId: string) => {
+    setDeleteInvoiceId(invoiceId);
+    setDeletePassword('');
+    setDeleteError('');
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteInvoiceId || !onDeleteInvoice) return;
+
+    if (!deletePassword) {
+      setDeleteError('Please enter your password');
+      return;
+    }
+
+    setDeleting(true);
+    setDeleteError('');
+
+    try {
+      const success = await onDeleteInvoice(deleteInvoiceId, deletePassword);
+      if (success) {
+        setDeleteModalOpen(false);
+        setDeleteInvoiceId(null);
+        setDeletePassword('');
+      } else {
+        setDeleteError('Failed to delete invoice. Please check your password.');
+      }
+    } catch {
+      setDeleteError('An error occurred. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const allSelected =
@@ -133,7 +173,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
       >
         <div style={{ flex: 1, minWidth: 200 }}>
           <label style={{ display: 'block', color: '#9ca3af', fontSize: 12, marginBottom: 4 }}>
-            Search (Invoice No., Customer, Project)
+            Search (Invoice No., Customer)
           </label>
           <input
             type="text"
@@ -292,9 +332,6 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                 Invoice No
               </th>
               <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>
-                Project
-              </th>
-              <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>
                 Client
               </th>
               <th style={{ textAlign: 'right', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>
@@ -314,7 +351,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
           <tbody>
             {filteredInvoices.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>
+                <td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>
                   {invoices.length === 0 ? 'No invoices found' : 'No matching invoices'}
                 </td>
               </tr>
@@ -331,9 +368,6 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                   </td>
                   <td style={{ padding: '12px 0', color: '#e5e7eb', fontSize: 14 }}>
                     {invoice.invoice_no}
-                  </td>
-                  <td style={{ padding: '12px 0', color: '#e5e7eb', fontSize: 14 }}>
-                    {invoice.project_name || '-'}
                   </td>
                   <td style={{ padding: '12px 0', color: '#e5e7eb', fontSize: 14 }}>
                     {invoice.clients?.name || '-'}
@@ -383,37 +417,54 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                     </select>
                   </td>
                   <td style={{ padding: '12px 0', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
                       <button
                         onClick={() => onViewInvoice(invoice.id)}
                         style={{
-                          padding: '6px 12px',
+                          padding: '6px 10px',
                           borderRadius: 6,
                           border: '1px solid #38bdf8',
                           background: 'transparent',
                           color: '#38bdf8',
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: 500,
                           cursor: 'pointer',
                         }}
                       >
-                        View Details
+                        View
                       </button>
                       <button
                         onClick={() => onPreviewInvoice(invoice.id)}
                         style={{
-                          padding: '6px 12px',
+                          padding: '6px 10px',
                           borderRadius: 6,
                           border: '1px solid #34d399',
                           background: 'transparent',
                           color: '#34d399',
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: 500,
                           cursor: 'pointer',
                         }}
                       >
                         Preview
                       </button>
+                      {onDeleteInvoice && (
+                        <button
+                          onClick={() => openDeleteModal(invoice.id)}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: 6,
+                            border: '1px solid #ef4444',
+                            background: 'transparent',
+                            color: '#ef4444',
+                            fontSize: 11,
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -422,6 +473,94 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
           </tbody>
         </table>
       </div>
+
+      {deleteModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setDeleteModalOpen(false)}
+        >
+          <div
+            style={{
+              background: '#1f2937',
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 400,
+              width: '90%',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: '0 0 16px', color: '#ef4444', fontSize: 18 }}>Delete Invoice</h3>
+            <p style={{ margin: '0 0 16px', color: '#9ca3af', fontSize: 14 }}>
+              This action cannot be undone. All data associated with this invoice will be permanently deleted.
+            </p>
+            <p style={{ margin: '0 0 16px', color: '#e5e7eb', fontSize: 14 }}>
+              Please enter your password to confirm:
+            </p>
+            <input
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder="Enter your password"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: '#374151',
+                border: '1px solid #4b5563',
+                borderRadius: 6,
+                color: '#e5e7eb',
+                fontSize: 14,
+                marginBottom: 12,
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleDelete();
+              }}
+            />
+            {deleteError && (
+              <p style={{ margin: '0 0 12px', color: '#ef4444', fontSize: 13 }}>{deleteError}</p>
+            )}
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 6,
+                  border: '1px solid #4b5563',
+                  background: 'transparent',
+                  color: '#e5e7eb',
+                  fontSize: 14,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: deleting ? '#6b7280' : '#ef4444',
+                  color: '#fff',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {deleting ? 'Deleting...' : 'Delete Invoice'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

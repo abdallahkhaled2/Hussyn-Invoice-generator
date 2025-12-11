@@ -14,6 +14,8 @@ import {
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { InvoiceService } from '../services/invoice.service';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import {
   StatCard,
   ChartCard,
@@ -39,8 +41,9 @@ ChartJS.register(
 
 const Dashboard: React.FC = () => {
   const toast = useToast();
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>('30days');
-  const [selectedMaterialInvoiceId, setSelectedMaterialInvoiceId] = useState<string>('');
+  const [selectedMaterialInvoiceIds, setSelectedMaterialInvoiceIds] = useState<string[]>([]);
 
   const {
     loading,
@@ -51,16 +54,16 @@ const Dashboard: React.FC = () => {
     topClients,
     invoices,
     materialBreakdownTotals,
-    loadMaterialsForInvoice,
+    loadMaterialsForInvoices,
     updateLocalInvoiceStatus,
     refetchData,
   } = useDashboardData(timeRange);
 
   useEffect(() => {
-    if (selectedMaterialInvoiceId) {
-      loadMaterialsForInvoice(selectedMaterialInvoiceId);
+    if (selectedMaterialInvoiceIds.length > 0) {
+      loadMaterialsForInvoices(selectedMaterialInvoiceIds);
     }
-  }, [selectedMaterialInvoiceId]);
+  }, [selectedMaterialInvoiceIds]);
 
   const handleStatusChange = async (invoiceId: string, newStatus: string) => {
     updateLocalInvoiceStatus(invoiceId, newStatus);
@@ -81,6 +84,33 @@ const Dashboard: React.FC = () => {
 
   const handlePreviewInvoice = async (invoiceId: string) => {
     await InvoiceService.openPreviewWindow(invoiceId);
+  };
+
+  const handleDeleteInvoice = async (invoiceId: string, password: string): Promise<boolean> => {
+    if (!user?.email || !password) {
+      return false;
+    }
+
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: password,
+      });
+
+      if (signInError) {
+        return false;
+      }
+
+      const success = await InvoiceService.deleteInvoice(invoiceId);
+      if (success) {
+        toast.success('Invoice Deleted', 'The invoice has been permanently deleted.');
+        refetchData();
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   };
 
   if (loading) {
@@ -253,8 +283,8 @@ const Dashboard: React.FC = () => {
           <MaterialBreakdownTable
             materials={materialBreakdown}
             invoices={invoices}
-            selectedInvoiceId={selectedMaterialInvoiceId}
-            onInvoiceSelect={setSelectedMaterialInvoiceId}
+            selectedInvoiceIds={selectedMaterialInvoiceIds}
+            onInvoiceSelect={setSelectedMaterialInvoiceIds}
           />
         </ChartCard>
 
@@ -265,6 +295,7 @@ const Dashboard: React.FC = () => {
             onStatusChange={handleStatusChange}
             onViewInvoice={handleViewInvoice}
             onPreviewInvoice={handlePreviewInvoice}
+            onDeleteInvoice={handleDeleteInvoice}
           />
         </ChartCard>
       </div>

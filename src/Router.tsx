@@ -8,6 +8,7 @@ import App from './App';
 import Dashboard from './pages/Dashboard';
 import InvoicePreview from './InvoicePreview';
 import InvoiceDetails from './pages/InvoiceDetails';
+import Customers from './pages/Customers';
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -82,6 +83,14 @@ const RouterContent: React.FC = () => {
           element={
             <ProtectedRoute>
               <InvoiceDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            <ProtectedRoute>
+              <Customers />
             </ProtectedRoute>
           }
         />

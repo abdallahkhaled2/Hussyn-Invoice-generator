@@ -27,8 +27,16 @@ const Navigation: React.FC = () => {
       }}>
         <div style={{
           display: 'flex',
+          alignItems: 'center',
           gap: 8,
         }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', marginRight: 16 }}>
+            <img
+              src="/Company%20Logo.svg"
+              alt="Logo"
+              style={{ height: 36 }}
+            />
+          </Link>
           <Link
             to="/"
             style={{
@@ -70,6 +78,20 @@ const Navigation: React.FC = () => {
             }}
           >
             Dashboard
+          </Link>
+          <Link
+            to="/customers"
+            style={{
+              padding: '16px 20px',
+              textDecoration: 'none',
+              color: isActive('/customers') ? '#38bdf8' : '#e5e7eb',
+              borderBottom: isActive('/customers') ? '2px solid #38bdf8' : '2px solid transparent',
+              fontSize: 14,
+              fontWeight: 500,
+              transition: 'all 0.2s',
+            }}
+          >
+            Customers
           </Link>
         </div>
         <button

@@ -4,6 +4,7 @@ import './App.css';
 import { saveInvoice as saveToDatabase } from './lib/invoiceService';
 import { ToastContainer, useToast } from './components/Toast';
 import { ConfirmModal } from './components/ConfirmModal';
+import { supabase } from './lib/supabase';
 import type {
   ItemCategory,
   CompanyInfo,
@@ -126,7 +127,7 @@ const App: React.FC = () => {
     date: new Date().toISOString().slice(0, 10),
     dueDate: '',
     projectName: 'Project Name',
-    orderClass: 'B2B',
+    orderClass: '',
   });
 
   // ===== Financial =====
@@ -218,6 +219,29 @@ const App: React.FC = () => {
 
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+
+  interface ExistingCustomer {
+    id: string;
+    name: string;
+    company: string | null;
+    address: string | null;
+    phone: string | null;
+    email: string | null;
+  }
+  const [existingCustomers, setExistingCustomers] = useState<ExistingCustomer[]>([]);
+
+  useEffect(() => {
+    const loadCustomers = async () => {
+      const { data } = await supabase
+        .from('clients')
+        .select('id, name, company, address, phone, email')
+        .order('name');
+      if (data) {
+        setExistingCustomers(data);
+      }
+    };
+    loadCustomers();
+  }, []);
 
   useEffect(() => {
     localStorage.removeItem('invoice-preview');
@@ -347,7 +371,7 @@ const App: React.FC = () => {
       date: new Date().toISOString().slice(0, 10),
       dueDate: '',
       projectName: 'Project Name',
-      orderClass: 'B2B',
+      orderClass: '',
     });
     setItems([]);
     setVatRate(14);
@@ -365,7 +389,36 @@ const App: React.FC = () => {
   };
 
   const handleSubmitClick = () => {
+    if (!client.name || client.name.trim() === '' || client.name === 'Client Name') {
+      toast.error('Client Name Required', 'Please enter a valid client name before submitting.');
+      return;
+    }
     setSubmitConfirmOpen(true);
+  };
+
+  const handleSelectCustomer = (customerId: string) => {
+    if (!customerId) {
+      setClient({
+        name: '',
+        company: '',
+        address: '',
+        phone: '',
+        email: '',
+        siteAddress: '',
+      });
+      return;
+    }
+    const selectedCustomer = existingCustomers.find((c) => c.id === customerId);
+    if (selectedCustomer) {
+      setClient({
+        name: selectedCustomer.name,
+        company: selectedCustomer.company || '',
+        address: selectedCustomer.address || '',
+        phone: selectedCustomer.phone || '',
+        email: selectedCustomer.email || '',
+        siteAddress: '',
+      });
+    }
   };
 
   const handleSubmitConfirm = async () => {
@@ -584,11 +637,34 @@ const App: React.FC = () => {
         {/* Client */}
         <section className="card">
           <h2 className="card-title">Client Info</h2>
-          <TextInput
-            label="Client Name"
-            value={client.name}
-            onChange={(v) => setClient({ ...client, name: v })}
-          />
+          <label className="field">
+            <span className="field-label">Select Existing Customer</span>
+            <select
+              className="input"
+              onChange={(e) => handleSelectCustomer(e.target.value)}
+              defaultValue=""
+            >
+              <option value="">-- New Customer --</option>
+              {existingCustomers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} {c.company ? `(${c.company})` : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span className="field-label">Client Name *</span>
+            <input
+              className="input"
+              type="text"
+              value={client.name}
+              onChange={(e) => setClient({ ...client, name: e.target.value })}
+              required
+              style={{
+                borderColor: !client.name || client.name === 'Client Name' ? '#ef4444' : undefined,
+              }}
+            />
+          </label>
           <TextInput
             label="Client Company"
             value={client.company}
@@ -599,11 +675,19 @@ const App: React.FC = () => {
             value={client.address}
             onChange={(v) => setClient({ ...client, address: v })}
           />
-          <TextInput
-            label="Phone"
-            value={client.phone}
-            onChange={(v) => setClient({ ...client, phone: v })}
-          />
+          <label className="field">
+            <span className="field-label">Phone</span>
+            <input
+              className="input"
+              type="tel"
+              value={client.phone}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9+\s-]/g, '');
+                setClient({ ...client, phone: val });
+              }}
+              placeholder="+20 100 000 0000"
+            />
+          </label>
           <TextInput
             label="Email"
             value={client.email}
@@ -640,9 +724,10 @@ const App: React.FC = () => {
             <span className="field-label">Order Class</span>
             <select
               className="input"
-              value={meta.orderClass || 'B2B'}
+              value={meta.orderClass || ''}
               onChange={(e) => setMeta({ ...meta, orderClass: e.target.value })}
             >
+              <option value="">-- Select --</option>
               <option value="B2B">B2B</option>
               <option value="B2C">B2C</option>
             </select>

@@ -49,12 +49,13 @@ export class AnalyticsService {
     const { data: items } = await itemQuery;
 
     const totalInvoices = invoices?.length || 0;
-    const totalRevenue = invoices?.reduce((sum, inv) => sum + Number(inv.total || 0), 0) || 0;
-    const avgInvoiceValue = totalInvoices > 0 ? totalRevenue / totalInvoices : 0;
+    const paidInvoices = invoices?.filter((inv) => inv.status === 'paid') || [];
+    const totalRevenue = paidInvoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
+    const avgInvoiceValue = paidInvoices.length > 0 ? totalRevenue / paidInvoices.length : 0;
     const totalItemsSold = items?.reduce((sum, item) => sum + Number(item.qty || 0), 0) || 0;
 
     const draftCount = invoices?.filter((inv) => inv.status === 'draft').length || 0;
-    const paidCount = invoices?.filter((inv) => inv.status === 'paid').length || 0;
+    const paidCount = paidInvoices.length;
     const sentCount = invoices?.filter((inv) => inv.status === 'sent').length || 0;
 
     return {
@@ -73,7 +74,7 @@ export class AnalyticsService {
 
     let query = supabase
       .from('invoices')
-      .select('invoice_date, total')
+      .select('invoice_date, total, status')
       .order('invoice_date', { ascending: true });
 
     if (dateFilter) {
@@ -94,7 +95,9 @@ export class AnalyticsService {
         grouped[period] = { invoiceCount: 0, revenue: 0 };
       }
       grouped[period].invoiceCount += 1;
-      grouped[period].revenue += Number(inv.total || 0);
+      if (inv.status === 'paid') {
+        grouped[period].revenue += Number(inv.total || 0);
+      }
     });
 
     return Object.entries(grouped)
@@ -276,6 +279,66 @@ export class AnalyticsService {
     }, {} as Record<string, TopClient>);
 
     return Object.values(grouped).sort((a, b) => b.total_revenue - a.total_revenue).slice(0, 5);
+  }
+
+  static async getDetailedMaterialsForInvoices(invoiceIds: string[]): Promise<any[]> {
+    if (invoiceIds.length === 0) return [];
+
+    const { data: invoices } = await supabase
+      .from('invoices')
+      .select(`
+        id,
+        invoice_no,
+        invoice_date,
+        clients (name)
+      `)
+      .in('id', invoiceIds);
+
+    if (!invoices || invoices.length === 0) return [];
+
+    const { data: items } = await supabase
+      .from('invoice_items')
+      .select('id, invoice_id, code, description')
+      .in('invoice_id', invoiceIds);
+
+    if (!items || items.length === 0) return [];
+
+    const itemIds = items.map((item) => item.id);
+
+    const { data: materials } = await supabase
+      .from('item_materials')
+      .select('invoice_item_id, material_name, unit, total_qty, unit_cost, total_cost')
+      .in('invoice_item_id', itemIds);
+
+    if (!materials) return [];
+
+    const invoiceMap = new Map(invoices.map((inv) => [inv.id, inv]));
+    const itemMap = new Map(items.map((item) => [item.id, item]));
+
+    const results: any[] = [];
+
+    materials.forEach((mat) => {
+      const item = itemMap.get(mat.invoice_item_id);
+      if (!item) return;
+
+      const invoice = invoiceMap.get(item.invoice_id);
+      if (!invoice) return;
+
+      results.push({
+        date: invoice.invoice_date,
+        customerName: (invoice.clients as any)?.name || 'Unknown',
+        invoiceNo: invoice.invoice_no,
+        itemName: item.code || 'Item',
+        description: item.description || '',
+        materialName: mat.material_name,
+        unit: mat.unit,
+        totalQty: mat.total_qty,
+        unitCost: mat.unit_cost,
+        totalCost: mat.total_cost,
+      });
+    });
+
+    return results;
   }
 
   static async getMaterialBreakdownTotalsPerInvoice(timeRange: TimeRange): Promise<Map<string, number>> {
