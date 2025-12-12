@@ -332,7 +332,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                 Invoice No
               </th>
               <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>
-                Client
+                Customer Name
               </th>
               <th style={{ textAlign: 'right', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>
                 Date

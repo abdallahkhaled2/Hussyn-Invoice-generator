@@ -270,7 +270,7 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
                 />
               </th>
               <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Invoice No</th>
-              <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Customer</th>
+              <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Customer Name</th>
               <th style={{ textAlign: 'right', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Date</th>
             </tr>
           </thead>

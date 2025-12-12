@@ -113,7 +113,7 @@ const App: React.FC = () => {
 
   // ===== Client =====
   const [client, setClient] = useState<ClientInfo>({
-    name: 'Client Name',
+    name: 'Customer Name',
     company: 'Client Company',
     address: 'Client Billing Address',
     phone: '+20 100 000 0000',
@@ -359,7 +359,7 @@ const App: React.FC = () => {
     localStorage.removeItem('invoice-preview');
 
     setClient({
-      name: 'Client Name',
+      name: 'Customer Name',
       company: 'Client Company',
       address: 'Client Billing Address',
       phone: '+20 100 000 0000',
@@ -389,8 +389,8 @@ const App: React.FC = () => {
   };
 
   const handleSubmitClick = () => {
-    if (!client.name || client.name.trim() === '' || client.name === 'Client Name') {
-      toast.error('Client Name Required', 'Please enter a valid client name before submitting.');
+    if (!client.name || client.name.trim() === '' || client.name === 'Customer Name') {
+      toast.error('Customer Name Required', 'Please enter a valid customer name before submitting.');
       return;
     }
     setSubmitConfirmOpen(true);
@@ -653,7 +653,7 @@ const App: React.FC = () => {
             </select>
           </label>
           <label className="field">
-            <span className="field-label">Client Name *</span>
+            <span className="field-label">Customer Name *</span>
             <input
               className="input"
               type="text"
@@ -661,7 +661,7 @@ const App: React.FC = () => {
               onChange={(e) => setClient({ ...client, name: e.target.value })}
               required
               style={{
-                borderColor: !client.name || client.name === 'Client Name' ? '#ef4444' : undefined,
+                borderColor: !client.name || client.name === 'Customer Name' ? '#ef4444' : undefined,
               }}
             />
           </label>

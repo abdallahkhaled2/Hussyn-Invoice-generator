@@ -168,7 +168,7 @@ const InvoiceDetails: React.FC = () => {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
             <div>
-              <div style={{ color: '#9ca3af', fontSize: 12, marginBottom: 4 }}>Name</div>
+              <div style={{ color: '#9ca3af', fontSize: 12, marginBottom: 4 }}>Customer Name</div>
               <div style={{ color: '#e5e7eb', fontSize: 16 }}>{invoice.clients?.name || '-'}</div>
             </div>
             <div>
