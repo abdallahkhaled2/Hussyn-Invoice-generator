@@ -398,6 +398,23 @@ const App: React.FC = () => {
       return;
     }
 
+    const itemsWithoutDimensions = items.filter(
+      (item) => !item.dimensions || item.dimensions.trim() === ''
+    );
+
+    if (itemsWithoutDimensions.length > 0) {
+      const itemDescriptions = itemsWithoutDimensions
+        .map((item, index) => `${index + 1}. ${item.description || item.category || 'Unnamed item'}`)
+        .join(', ');
+
+      toast.error(
+        'Missing Dimensions',
+        `The following items are missing dimensions: ${itemDescriptions}. Please add dimensions (H × W × T cm) before submitting.`,
+        8000
+      );
+      return;
+    }
+
     const normalizedName = client.name.trim().toLowerCase();
     const matchedCustomer = existingCustomers.find(
       (c) => c.name.toLowerCase() === normalizedName
