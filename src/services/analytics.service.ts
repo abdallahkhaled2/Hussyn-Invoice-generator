@@ -298,7 +298,7 @@ export class AnalyticsService {
 
     const { data: items } = await supabase
       .from('invoice_items')
-      .select('id, invoice_id, code, description')
+      .select('id, invoice_id, category, description')
       .in('invoice_id', invoiceIds);
 
     if (!items || items.length === 0) return [];
@@ -328,7 +328,7 @@ export class AnalyticsService {
         date: invoice.invoice_date,
         customerName: (invoice.clients as any)?.name || 'Unknown',
         invoiceNo: invoice.invoice_no,
-        itemName: item.code || 'Item',
+        itemName: item.category || 'Item',
         description: item.description || '',
         materialName: mat.material_name,
         unit: mat.unit,
