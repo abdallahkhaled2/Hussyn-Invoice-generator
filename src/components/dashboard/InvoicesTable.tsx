@@ -29,6 +29,11 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
+  const [bulkDeletePassword, setBulkDeletePassword] = useState('');
+  const [bulkDeleteError, setBulkDeleteError] = useState('');
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkDeleteProgress, setBulkDeleteProgress] = useState({ current: 0, total: 0 });
 
   const getCustomerName = (invoice: Invoice): string => {
     return invoice.client_name || invoice.clients?.name || '';
@@ -158,6 +163,53 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
     } finally {
       setDeleting(false);
     }
+  };
+
+  const openBulkDeleteModal = () => {
+    setBulkDeletePassword('');
+    setBulkDeleteError('');
+    setBulkDeleteProgress({ current: 0, total: selectedIds.size });
+    setBulkDeleteModalOpen(true);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!onDeleteInvoice || selectedIds.size === 0) return;
+
+    if (!bulkDeletePassword) {
+      setBulkDeleteError('Please enter your password');
+      return;
+    }
+
+    setBulkDeleting(true);
+    setBulkDeleteError('');
+
+    const idsToDelete = Array.from(selectedIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < idsToDelete.length; i++) {
+      setBulkDeleteProgress({ current: i + 1, total: idsToDelete.length });
+      try {
+        const success = await onDeleteInvoice(idsToDelete[i], bulkDeletePassword);
+        if (success) {
+          successCount++;
+        } else {
+          failCount++;
+          if (i === 0) {
+            setBulkDeleteError('Failed to delete. Please check your password.');
+            setBulkDeleting(false);
+            return;
+          }
+        }
+      } catch {
+        failCount++;
+      }
+    }
+
+    setBulkDeleting(false);
+    setBulkDeleteModalOpen(false);
+    setBulkDeletePassword('');
+    setSelectedIds(new Set());
   };
 
   const allSelected =
@@ -301,20 +353,38 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
           }}
         >
           <span>{selectedIds.size} invoice(s) selected</span>
-          <button
-            onClick={() => setSelectedIds(new Set())}
-            style={{
-              padding: '4px 12px',
-              background: 'transparent',
-              border: '1px solid #38bdf8',
-              borderRadius: 4,
-              color: '#38bdf8',
-              fontSize: 12,
-              cursor: 'pointer',
-            }}
-          >
-            Clear Selection
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {onDeleteInvoice && (
+              <button
+                onClick={openBulkDeleteModal}
+                style={{
+                  padding: '4px 12px',
+                  background: 'transparent',
+                  border: '1px solid #ef4444',
+                  borderRadius: 4,
+                  color: '#ef4444',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                Delete All
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              style={{
+                padding: '4px 12px',
+                background: 'transparent',
+                border: '1px solid #38bdf8',
+                borderRadius: 4,
+                color: '#38bdf8',
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              Clear Selection
+            </button>
+          </div>
         </div>
       )}
 
@@ -561,6 +631,131 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                 }}
               >
                 {deleting ? 'Deleting...' : 'Delete Invoice'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bulkDeleteModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            if (!bulkDeleting) {
+              setBulkDeleteModalOpen(false);
+            }
+          }}
+        >
+          <div
+            style={{
+              background: '#1f2937',
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 420,
+              width: '90%',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: '0 0 16px', color: '#ef4444', fontSize: 18 }}>
+              Delete {selectedIds.size} Invoice{selectedIds.size > 1 ? 's' : ''}
+            </h3>
+            <p style={{ margin: '0 0 16px', color: '#e5e7eb', fontSize: 14 }}>
+              Are you sure you want to delete {selectedIds.size} selected invoice{selectedIds.size > 1 ? 's' : ''}?
+            </p>
+            <p style={{ margin: '0 0 16px', color: '#9ca3af', fontSize: 13 }}>
+              This action cannot be undone. All data associated with these invoices will be permanently deleted.
+            </p>
+            <p style={{ margin: '0 0 16px', color: '#e5e7eb', fontSize: 14 }}>
+              Please enter your password to confirm:
+            </p>
+            <input
+              type="password"
+              value={bulkDeletePassword}
+              onChange={(e) => setBulkDeletePassword(e.target.value)}
+              placeholder="Enter your password"
+              disabled={bulkDeleting}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                background: '#374151',
+                border: '1px solid #4b5563',
+                borderRadius: 6,
+                color: '#e5e7eb',
+                fontSize: 14,
+                marginBottom: 12,
+                opacity: bulkDeleting ? 0.5 : 1,
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !bulkDeleting) handleBulkDelete();
+              }}
+            />
+            {bulkDeleting && (
+              <div style={{ marginBottom: 12 }}>
+                <div
+                  style={{
+                    height: 4,
+                    background: '#374151',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      height: '100%',
+                      width: `${(bulkDeleteProgress.current / bulkDeleteProgress.total) * 100}%`,
+                      background: '#ef4444',
+                      transition: 'width 0.2s ease',
+                    }}
+                  />
+                </div>
+                <p style={{ margin: '8px 0 0', color: '#9ca3af', fontSize: 12, textAlign: 'center' }}>
+                  Deleting {bulkDeleteProgress.current} of {bulkDeleteProgress.total}...
+                </p>
+              </div>
+            )}
+            {bulkDeleteError && (
+              <p style={{ margin: '0 0 12px', color: '#ef4444', fontSize: 13 }}>{bulkDeleteError}</p>
+            )}
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setBulkDeleteModalOpen(false)}
+                disabled={bulkDeleting}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 6,
+                  border: '1px solid #4b5563',
+                  background: 'transparent',
+                  color: '#e5e7eb',
+                  fontSize: 14,
+                  cursor: bulkDeleting ? 'not-allowed' : 'pointer',
+                  opacity: bulkDeleting ? 0.5 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: bulkDeleting ? '#6b7280' : '#ef4444',
+                  color: '#fff',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: bulkDeleting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {bulkDeleting ? 'Deleting...' : `Delete ${selectedIds.size} Invoice${selectedIds.size > 1 ? 's' : ''}`}
               </button>
             </div>
           </div>
