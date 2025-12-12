@@ -233,6 +233,27 @@ const Dashboard: React.FC = () => {
     return matchesSearch && matchesDateFrom && matchesDateTo;
   });
 
+  const filteredSummary = {
+    totalRevenue: filteredInvoicesBySearch.reduce((sum, inv) => sum + Number(inv.total || 0), 0),
+    totalCosting: filteredInvoicesBySearch.reduce((sum, inv) => {
+      const materialTotal = materialBreakdownTotals.get(inv.id) || 0;
+      return sum + materialTotal;
+    }, 0),
+    profitMargin: 0,
+    totalInvoices: filteredInvoicesBySearch.length,
+    avgInvoiceValue: 0,
+    totalItemsSold: 0,
+    draftCount: filteredInvoicesBySearch.filter(inv => inv.status === 'draft').length,
+    sentCount: filteredInvoicesBySearch.filter(inv => inv.status === 'sent').length,
+    paidCount: filteredInvoicesBySearch.filter(inv => inv.status === 'paid').length,
+  };
+  filteredSummary.profitMargin = filteredSummary.totalRevenue - filteredSummary.totalCosting;
+  filteredSummary.avgInvoiceValue = filteredSummary.totalInvoices > 0
+    ? filteredSummary.totalRevenue / filteredSummary.totalInvoices
+    : 0;
+
+  const displaySummary = (searchTerm || dateFrom || dateTo) ? filteredSummary : summary;
+
   return (
     <div
       style={{
@@ -316,23 +337,27 @@ const Dashboard: React.FC = () => {
           )}
         </div>
 
+        <h2 style={{ margin: '0 0 24px 0', color: '#e5e7eb', fontSize: 24, fontWeight: 600 }}>
+          Overview
+        </h2>
+
         <h3 style={{ margin: '0 0 12px 0', color: '#9ca3af', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Financial Overview
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
           <StatCard
             title="Total Sales"
-            value={formatCurrency(summary?.totalRevenue || 0)}
+            value={formatCurrency(displaySummary?.totalRevenue || 0)}
             color="#6b7280"
           />
           <StatCard
             title="Total Costing"
-            value={formatCurrency(summary?.totalCosting || 0)}
+            value={formatCurrency(displaySummary?.totalCosting || 0)}
             color="#ef4444"
           />
           <StatCard
             title="Profit Margin"
-            value={formatCurrency(summary?.profitMargin || 0)}
+            value={formatCurrency(displaySummary?.profitMargin || 0)}
             color="#22c55e"
           />
         </div>
@@ -343,17 +368,17 @@ const Dashboard: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
           <StatCard
             title="Total Invoices"
-            value={formatNumber(summary?.totalInvoices || 0)}
+            value={formatNumber(displaySummary?.totalInvoices || 0)}
             color="#38bdf8"
           />
           <StatCard
             title="Average Invoice"
-            value={formatCurrency(summary?.avgInvoiceValue || 0)}
+            value={formatCurrency(displaySummary?.avgInvoiceValue || 0)}
             color="#fbbf24"
           />
           <StatCard
             title="Items Sold"
-            value={formatNumber(summary?.totalItemsSold || 0)}
+            value={formatNumber(displaySummary?.totalItemsSold || 0)}
             color="#a78bfa"
           />
         </div>
@@ -364,19 +389,19 @@ const Dashboard: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
           <StatCard
             title="Draft Invoices"
-            value={formatNumber(summary?.draftCount || 0)}
+            value={formatNumber(displaySummary?.draftCount || 0)}
             subtitle="Pending"
             color="#9ca3af"
           />
           <StatCard
             title="Sent Invoices"
-            value={formatNumber(summary?.sentCount || 0)}
+            value={formatNumber(displaySummary?.sentCount || 0)}
             subtitle="Awaiting payment"
             color="#60a5fa"
           />
           <StatCard
             title="Paid Invoices"
-            value={formatNumber(summary?.paidCount || 0)}
+            value={formatNumber(displaySummary?.paidCount || 0)}
             subtitle="Completed"
             color="#34d399"
           />

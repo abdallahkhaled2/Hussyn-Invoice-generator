@@ -496,7 +496,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                           cursor: 'pointer',
                         }}
                       >
-                        View
+                        View Details
                       </button>
                       <button
                         onClick={() => onPreviewInvoice(invoice.id)}
@@ -511,7 +511,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                           cursor: 'pointer',
                         }}
                       >
-                        Preview
+                        Invoice
                       </button>
                       {onDeleteInvoice && (
                         <button
