@@ -8,6 +8,8 @@ export interface AnalyticsSummary {
   draftCount: number;
   paidCount: number;
   sentCount: number;
+  totalCosting: number;
+  profitMargin: number;
 }
 
 export interface TimeSeriesData {

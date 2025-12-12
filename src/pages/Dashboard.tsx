@@ -44,6 +44,9 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>('30days');
   const [selectedMaterialInvoiceIds, setSelectedMaterialInvoiceIds] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const {
     loading,
@@ -217,6 +220,19 @@ const Dashboard: React.FC = () => {
     },
   };
 
+  const filteredInvoicesBySearch = invoices.filter((invoice) => {
+    const matchesSearch = !searchTerm ||
+      invoice.invoice_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (invoice.client_name || invoice.clients?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+    const invoiceDate = invoice.invoice_date ? new Date(invoice.invoice_date) : null;
+    const matchesDateFrom = !dateFrom || (invoiceDate && invoiceDate >= new Date(dateFrom));
+    const matchesDateTo = !dateTo || (invoiceDate && invoiceDate <= new Date(dateTo));
+
+    return matchesSearch && matchesDateFrom && matchesDateTo;
+  });
+
   return (
     <div
       style={{
@@ -234,16 +250,92 @@ const Dashboard: React.FC = () => {
           <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
         </div>
 
+        <div style={{ marginBottom: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            placeholder="Search by customer name or invoice number..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              flex: '1 1 300px',
+              padding: '10px 16px',
+              background: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: 8,
+              color: '#e5e7eb',
+              fontSize: 14,
+            }}
+          />
+          <input
+            type="date"
+            placeholder="From Date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            style={{
+              padding: '10px 16px',
+              background: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: 8,
+              color: '#e5e7eb',
+              fontSize: 14,
+            }}
+          />
+          <input
+            type="date"
+            placeholder="To Date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            style={{
+              padding: '10px 16px',
+              background: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: 8,
+              color: '#e5e7eb',
+              fontSize: 14,
+            }}
+          />
+          {(searchTerm || dateFrom || dateTo) && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setDateFrom('');
+                setDateTo('');
+              }}
+              style={{
+                padding: '10px 16px',
+                background: '#334155',
+                border: 'none',
+                borderRadius: 8,
+                color: '#e5e7eb',
+                fontSize: 14,
+                cursor: 'pointer',
+              }}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
           <StatCard
-            title="Total Revenue"
+            title="Total Sales"
             value={formatCurrency(summary?.totalRevenue || 0)}
-            color="#38bdf8"
+            color="#6b7280"
+          />
+          <StatCard
+            title="Total Costing"
+            value={formatCurrency(summary?.totalCosting || 0)}
+            color="#ef4444"
+          />
+          <StatCard
+            title="Profit Margin"
+            value={formatCurrency(summary?.profitMargin || 0)}
+            color="#22c55e"
           />
           <StatCard
             title="Total Invoices"
             value={formatNumber(summary?.totalInvoices || 0)}
-            color="#34d399"
+            color="#38bdf8"
           />
           <StatCard
             title="Average Invoice"
@@ -253,7 +345,7 @@ const Dashboard: React.FC = () => {
           <StatCard
             title="Items Sold"
             value={formatNumber(summary?.totalItemsSold || 0)}
-            color="#f87171"
+            color="#a78bfa"
           />
         </div>
 
@@ -277,6 +369,8 @@ const Dashboard: React.FC = () => {
             color="#34d399"
           />
         </div>
+
+        <div style={{ height: 2, background: '#334155', marginBottom: 24 }} />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: 16, marginBottom: 16 }}>
           <ChartCard title="Revenue Over Time">
@@ -309,18 +403,22 @@ const Dashboard: React.FC = () => {
           </ChartCard>
         </div>
 
+        <div style={{ height: 2, background: '#334155', marginBottom: 24 }} />
+
         <ChartCard title="Material Breakdown (Detailed)" style={{ marginTop: 16 }}>
           <MaterialBreakdownTable
             materials={materialBreakdown}
-            invoices={invoices}
+            invoices={filteredInvoicesBySearch}
             selectedInvoiceIds={selectedMaterialInvoiceIds}
             onInvoiceSelect={setSelectedMaterialInvoiceIds}
           />
         </ChartCard>
 
+        <div style={{ height: 2, background: '#334155', marginTop: 24, marginBottom: 24 }} />
+
         <ChartCard title="All Invoices" style={{ marginTop: 16 }}>
           <InvoicesTable
-            invoices={invoices}
+            invoices={filteredInvoicesBySearch}
             materialBreakdownTotals={materialBreakdownTotals}
             onStatusChange={handleStatusChange}
             onViewInvoice={handleViewInvoice}

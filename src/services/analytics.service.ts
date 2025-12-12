@@ -27,7 +27,7 @@ export class AnalyticsService {
   static async getSummary(timeRange: TimeRange): Promise<AnalyticsSummary> {
     const dateFilter = this.getDateFilter(timeRange);
 
-    let invoiceQuery = supabase.from('invoices').select('total, status');
+    let invoiceQuery = supabase.from('invoices').select('id, total, status');
     if (dateFilter) {
       invoiceQuery = invoiceQuery.gte('invoice_date', dateFilter.toISOString().split('T')[0]);
     }
@@ -58,6 +58,14 @@ export class AnalyticsService {
     const paidCount = paidInvoices.length;
     const sentCount = invoices?.filter((inv) => inv.status === 'sent').length || 0;
 
+    const materialTotals = await this.getMaterialBreakdownTotalsPerInvoice(timeRange);
+    const paidInvoiceIds = paidInvoices.map((inv) => inv.id);
+    const totalCosting = paidInvoiceIds.reduce((sum, id) => {
+      return sum + (materialTotals.get(id) || 0);
+    }, 0);
+
+    const profitMargin = totalRevenue - totalCosting;
+
     return {
       totalInvoices,
       totalRevenue,
@@ -66,6 +74,8 @@ export class AnalyticsService {
       draftCount,
       paidCount,
       sentCount,
+      totalCosting,
+      profitMargin,
     };
   }
 
