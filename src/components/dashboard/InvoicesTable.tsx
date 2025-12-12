@@ -30,12 +30,17 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
 
+  const getCustomerName = (invoice: Invoice): string => {
+    return invoice.client_name || invoice.clients?.name || '';
+  };
+
   const filteredInvoices = useMemo(() => {
     return invoices.filter((invoice) => {
+      const customerName = getCustomerName(invoice);
       const matchesSearch =
         !searchTerm ||
         invoice.invoice_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        invoice.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+        customerName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesDateFrom = !dateFrom || invoice.invoice_date >= dateFrom;
       const matchesDateTo = !dateTo || invoice.invoice_date <= dateTo;
@@ -99,7 +104,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
         [
           invoice.invoice_no,
           invoice.invoice_date,
-          invoice.clients?.name || '',
+          getCustomerName(invoice),
           invoice.due_date || '',
           materialTotal.toFixed(2),
           sellingPrice.toFixed(2),
@@ -370,7 +375,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                     {invoice.invoice_no}
                   </td>
                   <td style={{ padding: '12px 0', color: '#e5e7eb', fontSize: 14 }}>
-                    {invoice.clients?.name || '-'}
+                    {getCustomerName(invoice) || '-'}
                   </td>
                   <td style={{ padding: '12px 0', color: '#e5e7eb', fontSize: 14, textAlign: 'right' }}>
                     {invoice.invoice_date}

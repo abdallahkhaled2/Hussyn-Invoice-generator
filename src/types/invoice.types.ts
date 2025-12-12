@@ -81,5 +81,6 @@ export interface Invoice {
   total: number;
   status: string;
   order_class?: string;
+  client_name?: string;
   clients: { name: string } | null;
 }

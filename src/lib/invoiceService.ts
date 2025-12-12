@@ -80,6 +80,7 @@ export const saveInvoice = async (payload: InvoicePayload) => {
       .insert({
         invoice_no: invoiceNo,
         client_id: clientId,
+        client_name: client.name || '',
         project_name: meta.projectName,
         invoice_date: meta.date,
         due_date: meta.dueDate || null,

@@ -290,7 +290,7 @@ export class AnalyticsService {
         id,
         invoice_no,
         invoice_date,
-        clients (name)
+        client_name
       `)
       .in('id', invoiceIds);
 
@@ -326,7 +326,7 @@ export class AnalyticsService {
 
       results.push({
         date: invoice.invoice_date,
-        customerName: (invoice.clients as any)?.name || 'Unknown',
+        customerName: (invoice as any).client_name || 'Unknown',
         invoiceNo: invoice.invoice_no,
         itemName: item.category || 'Item',
         description: item.description || '',
