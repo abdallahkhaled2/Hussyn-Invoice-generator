@@ -290,7 +290,8 @@ export class AnalyticsService {
         id,
         invoice_no,
         invoice_date,
-        client_name
+        client_name,
+        clients (name)
       `)
       .in('id', invoiceIds);
 
@@ -324,9 +325,10 @@ export class AnalyticsService {
       const invoice = invoiceMap.get(item.invoice_id);
       if (!invoice) return;
 
+      const customerName = (invoice as any).client_name || (invoice as any).clients?.name || 'Unknown';
       results.push({
         date: invoice.invoice_date,
-        customerName: (invoice as any).client_name || 'Unknown',
+        customerName,
         invoiceNo: invoice.invoice_no,
         itemName: item.category || 'Item',
         description: item.description || '',

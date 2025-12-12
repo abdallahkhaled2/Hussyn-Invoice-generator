@@ -82,9 +82,8 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
     lines.push(
       [
         'Invoice No.',
-        'Invoice Date',
+        'Date',
         'Customer Name',
-        'Due Date',
         'Material Breakdown Total',
         'Selling Price (Invoice Total)',
         'Margin',
@@ -103,9 +102,8 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
       lines.push(
         [
           invoice.invoice_no,
-          invoice.invoice_date,
-          getCustomerName(invoice),
           invoice.due_date || '',
+          getCustomerName(invoice),
           materialTotal.toFixed(2),
           sellingPrice.toFixed(2),
           margin.toFixed(2),
