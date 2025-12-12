@@ -34,11 +34,23 @@ export const saveInvoice = async (payload: InvoicePayload) => {
     let clientId: string | null = null;
 
     if (client.name || client.email) {
-      const { data: existingClient } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('email', client.email)
-        .maybeSingle();
+      let existingClient = null;
+
+      if (client.email && client.email.trim()) {
+        const { data } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('email', client.email)
+          .maybeSingle();
+        existingClient = data;
+      } else if (client.name && client.name.trim()) {
+        const { data } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('name', client.name)
+          .maybeSingle();
+        existingClient = data;
+      }
 
       if (existingClient) {
         clientId = existingClient.id;
@@ -47,11 +59,11 @@ export const saveInvoice = async (payload: InvoicePayload) => {
           .from('clients')
           .insert({
             name: client.name,
-            company: client.company,
-            address: client.address,
-            phone: client.phone,
-            email: client.email,
-            site_address: client.siteAddress,
+            company: client.company || null,
+            address: client.address || null,
+            phone: client.phone || null,
+            email: client.email || null,
+            site_address: client.siteAddress || null,
           })
           .select()
           .single();

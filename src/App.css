@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
     'Segoe UI', sans-serif;
   color: #e5e7eb;
   background-color: #020617;
@@ -20,152 +20,201 @@ body {
 .app {
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
   display: flex;
   justify-content: center;
-  padding: 12px 16px 24px;
+  padding: 20px;
   box-sizing: border-box;
 }
 
 .form-shell {
   width: 100%;
-  max-width: 1600px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 24px 24px 40px;
-  border-radius: 20px;
-  border: 1px solid #1f2937;
-  background: #020617;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+  padding: 32px;
+  border-radius: 16px;
+  border: 1px solid #1e293b;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 @media (min-width: 1800px) {
   .form-shell {
-    max-width: 1800px;
+    max-width: 1600px;
   }
 }
 
 @media (max-width: 768px) {
   .app {
-    padding: 8px 8px 16px;
+    padding: 12px;
   }
   .form-shell {
-    padding: 16px 12px 32px;
+    padding: 20px;
     border-radius: 12px;
   }
 }
 
 .app-title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  letter-spacing: 0.4px;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Cards */
 
 .card {
-  margin-bottom: 16px;
-  padding: 12px;
+  margin-bottom: 20px;
+  padding: 20px;
   border-radius: 12px;
-  border: 1px solid #1f2937;
-  background: #020617;
+  border: 1px solid #1e293b;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: #334155;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin: 0 0 16px;
+  color: #f1f5f9;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title::before {
+  content: '';
+  width: 3px;
+  height: 18px;
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  border-radius: 2px;
 }
 
 /* Fields */
 
 .field {
   display: block;
-  font-size: 11px;
-  margin-bottom: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
 }
 
 .field-label {
   display: block;
-  margin-bottom: 4px;
-  color: #9ca3af;
+  margin-bottom: 6px;
+  color: #cbd5e1;
+  font-weight: 500;
+  font-size: 13px;
 }
 
 .field-inline {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .field-hint {
-  font-size: 10px;
-  color: #9ca3af;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
 }
 
 .input {
   width: 100%;
-  padding: 6px 8px;
-  font-size: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
   border-radius: 8px;
-  border: 1px solid #374151;
+  border: 1px solid #334155;
   outline: none;
-  background: #020617;
+  background: rgba(15, 23, 42, 0.5);
   color: #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.input:hover {
+  border-color: #475569;
 }
 
 .input:focus {
   border-color: #38bdf8;
+  background: rgba(15, 23, 42, 0.8);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
 }
 
 .textarea {
   width: 100%;
-  padding: 6px 8px;
-  font-size: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
   border-radius: 8px;
-  border: 1px solid #374151;
+  border: 1px solid #334155;
   resize: vertical;
   outline: none;
-  background: #020617;
+  background: rgba(15, 23, 42, 0.5);
   color: #e5e7eb;
+  transition: all 0.2s ease;
+  min-height: 80px;
+}
+
+.textarea:hover {
+  border-color: #475569;
 }
 
 .textarea:focus {
   border-color: #38bdf8;
+  background: rgba(15, 23, 42, 0.8);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
 }
 
 /* Items */
 
 .item-card {
   border-radius: 10px;
-  border: 1px solid #1f2937;
-  padding: 8px;
-  margin-bottom: 8px;
-  background: #020617;
+  border: 1px solid #1e293b;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  transition: all 0.2s ease;
+}
+
+.item-card:hover {
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .item-row {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .item-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 8px;
+  font-size: 12px;
 }
 
 /* Image preview inside form */
 
 .form-image-preview {
-  width: 80px;
-  height: 80px;
-  margin-top: 6px;
+  width: 100px;
+  height: 100px;
+  margin-top: 8px;
   border-radius: 10px;
-  border: 1px solid #1f2937;
+  border: 1px solid #1e293b;
   overflow: hidden;
-  background: #020617;
+  background: rgba(15, 23, 42, 0.5);
 }
 
 .form-image-preview img {
@@ -177,37 +226,63 @@ body {
 /* Buttons */
 
 .btn-primary {
-  margin-top: 12px;
+  margin-top: 16px;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 999px;
+  padding: 14px 20px;
+  border-radius: 10px;
   border: none;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  background: #38bdf8;
-  color: #020617;
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  color: #ffffff;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-outline {
-  margin-top: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px dashed #6b7280;
-  font-size: 12px;
-  background: #020617;
-  color: #e5e7eb;
+  margin-top: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(15, 23, 42, 0.5);
+  color: #cbd5e1;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
 }
 
 .btn-delete {
-  background: #7f1d1d;
-  border-radius: 999px;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  border-radius: 8px;
   border: none;
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  color: #fee2e2;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 /* ========== MODALS ========== */
@@ -215,7 +290,8 @@ body {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,13 +299,13 @@ body {
 }
 
 .modal-card {
-  width: min(520px, 100% - 32px);
+  width: min(560px, 100% - 32px);
   max-height: 90vh;
   overflow-y: auto;
-  background: #020617;
+  background: #0f172a;
   border-radius: 16px;
-  border: 1px solid #1f2937;
-  padding: 16px 14px 18px;
+  border: 1px solid #1e293b;
+  padding: 24px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
 }
 
@@ -262,9 +338,7 @@ body {
   margin-bottom: 12px;
 }
 
-/* العناصر اللي مش عايزها تطبع */
 .no-print {
-  /* هيتم إخفاؤها في @media print برضه */
 }
 
 .print-btn {
@@ -280,8 +354,8 @@ body {
 /* ========== INVOICE PAGE (A4 LOOK) ========== */
 
 .invoice-page {
-  width: 794px; /* ~ 210mm عند 96dpi */
-  min-height: 1123px; /* ~ 297mm */
+  width: 794px;
+  min-height: 1123px;
   background: #ffffff;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
   padding: 40px 48px;
@@ -506,7 +580,7 @@ body {
   }
 
   .no-print {
-    display: none !important; /* إخفاء الأزرار في الـ PDF */
+    display: none !important;
   }
 
   .preview-root {
@@ -524,7 +598,6 @@ body {
   }
 }
 
-/* تحديد مقاس ورقة الطباعة ومارجن الطابعة */
 @page {
   size: A4;
   margin: 10mm;
