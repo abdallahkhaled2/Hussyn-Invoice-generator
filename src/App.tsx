@@ -219,6 +219,9 @@ const App: React.FC = () => {
 
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  const [duplicateCustomerModalOpen, setDuplicateCustomerModalOpen] = useState(false);
+  const [matchingCustomer, setMatchingCustomer] = useState<{ id: string; name: string; company: string | null } | null>(null);
+  const [forceCreateNewClient, setForceCreateNewClient] = useState(false);
 
   interface ExistingCustomer {
     id: string;
@@ -338,7 +341,7 @@ const App: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const buildPayload = (): InvoicePayload => ({
+  const buildPayload = (forceCreate?: boolean): InvoicePayload => ({
     company,
     client,
     meta,
@@ -346,6 +349,7 @@ const App: React.FC = () => {
     vatRate,
     discount,
     notes,
+    forceCreateNewClient: forceCreate,
   });
 
   const saveInvoice = () => {
@@ -393,6 +397,30 @@ const App: React.FC = () => {
       toast.error('Customer Name Required', 'Please enter a valid customer name before submitting.');
       return;
     }
+
+    const normalizedName = client.name.trim().toLowerCase();
+    const matchedCustomer = existingCustomers.find(
+      (c) => c.name.toLowerCase() === normalizedName
+    );
+
+    if (matchedCustomer) {
+      setMatchingCustomer(matchedCustomer);
+      setDuplicateCustomerModalOpen(true);
+    } else {
+      setForceCreateNewClient(true);
+      setSubmitConfirmOpen(true);
+    }
+  };
+
+  const handleUseExistingCustomer = () => {
+    setDuplicateCustomerModalOpen(false);
+    setForceCreateNewClient(false);
+    setSubmitConfirmOpen(true);
+  };
+
+  const handleCreateNewCustomer = () => {
+    setDuplicateCustomerModalOpen(false);
+    setForceCreateNewClient(true);
     setSubmitConfirmOpen(true);
   };
 
@@ -424,7 +452,7 @@ const App: React.FC = () => {
   const handleSubmitConfirm = async () => {
     setSubmitConfirmOpen(false);
 
-    const payload = buildPayload();
+    const payload = buildPayload(forceCreateNewClient);
     const result = await saveToDatabase(payload);
 
     if (result.success) {
@@ -434,10 +462,23 @@ const App: React.FC = () => {
         6000
       );
       clearFormSilently();
+
+      if (forceCreateNewClient) {
+        const { data } = await supabase
+          .from('clients')
+          .select('id, name, company, address, phone, email')
+          .order('name');
+        if (data) {
+          setExistingCustomers(data);
+        }
+      }
     } else {
       toast.error('Save Failed', 'Failed to save invoice to database. Check the console for details.');
       console.error('Save failed:', result.error);
     }
+
+    setForceCreateNewClient(false);
+    setMatchingCustomer(null);
   };
 
   const loadInvoice = () => {
@@ -614,6 +655,90 @@ const App: React.FC = () => {
         onConfirm={handleSubmitConfirm}
         onCancel={() => setSubmitConfirmOpen(false)}
       />
+
+      {duplicateCustomerModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setDuplicateCustomerModalOpen(false)}
+        >
+          <div
+            style={{
+              background: '#1f2937',
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 450,
+              width: '90%',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: '0 0 16px', color: '#f59e0b', fontSize: 18 }}>
+              Customer Name Exists
+            </h3>
+            <p style={{ margin: '0 0 16px', color: '#e5e7eb', fontSize: 14 }}>
+              A customer with the name "{matchingCustomer?.name}"
+              {matchingCustomer?.company ? ` (${matchingCustomer.company})` : ''} already exists in the system.
+            </p>
+            <p style={{ margin: '0 0 20px', color: '#9ca3af', fontSize: 14 }}>
+              Would you like to use the existing customer record or create a new one?
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setDuplicateCustomerModalOpen(false)}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 6,
+                  border: '1px solid #4b5563',
+                  background: 'transparent',
+                  color: '#e5e7eb',
+                  fontSize: 14,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUseExistingCustomer}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: '#3b82f6',
+                  color: '#fff',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Use Existing
+              </button>
+              <button
+                onClick={handleCreateNewCustomer}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: '#059669',
+                  color: '#fff',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                Create New
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="form-shell">
         <div
           style={{

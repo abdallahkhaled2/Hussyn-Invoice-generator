@@ -24,7 +24,7 @@ export const generateInvoiceNumber = async (): Promise<string> => {
 
 export const saveInvoice = async (payload: InvoicePayload) => {
   try {
-    const { client, meta, items, vatRate, discount, notes } = payload;
+    const { client, meta, items, vatRate, discount, notes, forceCreateNewClient } = payload;
 
     const subtotal = items.reduce((sum: number, item: InvoiceItem) => sum + item.qty * item.unitPrice, 0);
     const taxableAmount = Math.max(subtotal - discount, 0);
@@ -36,20 +36,22 @@ export const saveInvoice = async (payload: InvoicePayload) => {
     if (client.name || client.email) {
       let existingClient = null;
 
-      if (client.email && client.email.trim()) {
-        const { data } = await supabase
-          .from('clients')
-          .select('id')
-          .eq('email', client.email)
-          .maybeSingle();
-        existingClient = data;
-      } else if (client.name && client.name.trim()) {
-        const { data } = await supabase
-          .from('clients')
-          .select('id')
-          .eq('name', client.name)
-          .maybeSingle();
-        existingClient = data;
+      if (!forceCreateNewClient) {
+        if (client.email && client.email.trim()) {
+          const { data } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('email', client.email)
+            .maybeSingle();
+          existingClient = data;
+        } else if (client.name && client.name.trim()) {
+          const { data } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('name', client.name)
+            .maybeSingle();
+          existingClient = data;
+        }
       }
 
       if (existingClient) {

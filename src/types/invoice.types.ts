@@ -65,6 +65,7 @@ export interface InvoicePayload {
   vatRate: number;
   discount: number;
   notes: string;
+  forceCreateNewClient?: boolean;
 }
 
 export interface InvoiceDetails {

@@ -5,6 +5,10 @@ import { CURRENCY, CURRENCY_LOCALE } from '../../constants/company.constants';
 import { escapeCSV, downloadCSV } from '../../utils/export.utils';
 import { AnalyticsService } from '../../services/analytics.service';
 
+const getCustomerName = (invoice: Invoice): string => {
+  return invoice.client_name || invoice.clients?.name || '';
+};
+
 interface MaterialBreakdownTableProps {
   materials: MaterialBreakdown[];
   invoices: Invoice[];
@@ -35,10 +39,11 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
 
   const filteredInvoices = useMemo(() => {
     return invoices.filter((invoice) => {
+      const customerName = getCustomerName(invoice);
       const matchesSearch =
         !searchTerm ||
         invoice.invoice_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        invoice.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+        customerName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesDateFrom = !dateFrom || invoice.invoice_date >= dateFrom;
       const matchesDateTo = !dateTo || invoice.invoice_date <= dateTo;
@@ -83,7 +88,7 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
 
       const lines: string[] = [];
       lines.push(
-        ['Date', 'Customer Name', 'Invoice No', 'Item Name', 'Description', 'Material', 'Unit', 'Quantity', 'Unit Cost', 'Total Cost']
+        ['Invoice Date', 'Due Date', 'Customer Name', 'Invoice No', 'Item Name', 'Description', 'Material', 'Unit', 'Quantity', 'Unit Cost', 'Total Cost']
           .map(escapeCSV)
           .join(',')
       );
@@ -91,7 +96,8 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
       detailedData.forEach((row) => {
         lines.push(
           [
-            row.date,
+            row.invoiceDate,
+            row.dueDate,
             row.customerName,
             row.invoiceNo,
             row.itemName,
@@ -329,7 +335,7 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
                       />
                     </td>
                     <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13 }}>{invoice.invoice_no}</td>
-                    <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13 }}>{invoice.clients?.name || '-'}</td>
+                    <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13 }}>{getCustomerName(invoice) || '-'}</td>
                     <td style={{ padding: '8px 0', textAlign: 'center' }}>
                       <span
                         style={{
