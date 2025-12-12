@@ -25,7 +25,7 @@ export class InvoiceService {
 
     let query = supabase
       .from('invoices')
-      .select('id, invoice_no, project_name, invoice_date, total, status, clients(name)')
+      .select('id, invoice_no, project_name, invoice_date, total, status, due_date, order_class, clients(name)')
       .order('invoice_date', { ascending: false });
 
     if (dateFilter) {
@@ -38,7 +38,7 @@ export class InvoiceService {
 
     return data.map((inv: any) => ({
       ...inv,
-      clients: Array.isArray(inv.clients) && inv.clients.length > 0 ? inv.clients[0] : null,
+      clients: inv.clients && inv.clients.length > 0 ? inv.clients[0] : null,
     })) as Invoice[];
   }
 
