@@ -12,6 +12,13 @@ interface MaterialBreakdownTableProps {
   onInvoiceSelect: (invoiceIds: string[]) => void;
 }
 
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  draft: { bg: '#374151', text: '#9ca3af' },
+  sent: { bg: '#1e40af', text: '#93c5fd' },
+  paid: { bg: '#065f46', text: '#6ee7b7' },
+  cancelled: { bg: '#7f1d1d', text: '#fca5a5' },
+};
+
 export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
   materials,
   invoices,
@@ -21,6 +28,7 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [exporting, setExporting] = useState(false);
 
   const totalCost = materials.reduce((sum, m) => sum + m.total_cost, 0);
@@ -34,10 +42,11 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
 
       const matchesDateFrom = !dateFrom || invoice.invoice_date >= dateFrom;
       const matchesDateTo = !dateTo || invoice.invoice_date <= dateTo;
+      const matchesStatus = !statusFilter || invoice.status === statusFilter;
 
-      return matchesSearch && matchesDateFrom && matchesDateTo;
+      return matchesSearch && matchesDateFrom && matchesDateTo && matchesStatus;
     });
-  }, [invoices, searchTerm, dateFrom, dateTo]);
+  }, [invoices, searchTerm, dateFrom, dateTo, statusFilter]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -168,12 +177,36 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
             }}
           />
         </div>
-        {(searchTerm || dateFrom || dateTo) && (
+        <div>
+          <label style={{ display: 'block', color: '#9ca3af', fontSize: 12, marginBottom: 4 }}>Status</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              background: '#1f2937',
+              border: '1px solid #374151',
+              borderRadius: 6,
+              color: '#e5e7eb',
+              fontSize: 14,
+              minWidth: 120,
+              cursor: 'pointer',
+            }}
+          >
+            <option value="">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="paid">Paid</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        {(searchTerm || dateFrom || dateTo || statusFilter) && (
           <button
             onClick={() => {
               setSearchTerm('');
               setDateFrom('');
               setDateTo('');
+              setStatusFilter('');
             }}
             style={{
               padding: '8px 16px',
@@ -271,34 +304,54 @@ export const MaterialBreakdownTable: React.FC<MaterialBreakdownTableProps> = ({
               </th>
               <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Invoice No</th>
               <th style={{ textAlign: 'left', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Customer Name</th>
+              <th style={{ textAlign: 'center', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Status</th>
               <th style={{ textAlign: 'right', padding: '8px 0', color: '#9ca3af', fontSize: 12 }}>Date</th>
             </tr>
           </thead>
           <tbody>
             {filteredInvoices.length === 0 ? (
               <tr>
-                <td colSpan={4} style={{ padding: 20, textAlign: 'center', color: '#6b7280' }}>
+                <td colSpan={5} style={{ padding: 20, textAlign: 'center', color: '#6b7280' }}>
                   No invoices found
                 </td>
               </tr>
             ) : (
-              filteredInvoices.map((invoice) => (
-                <tr key={invoice.id} style={{ borderBottom: '1px solid #1f2937' }}>
-                  <td style={{ padding: '8px' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedInvoiceIds.includes(invoice.id)}
-                      onChange={(e) => handleSelectOne(invoice.id, e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  </td>
-                  <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13 }}>{invoice.invoice_no}</td>
-                  <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13 }}>{invoice.clients?.name || '-'}</td>
-                  <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13, textAlign: 'right' }}>
-                    {invoice.invoice_date}
-                  </td>
-                </tr>
-              ))
+              filteredInvoices.map((invoice) => {
+                const statusColor = STATUS_COLORS[invoice.status] || STATUS_COLORS.draft;
+                return (
+                  <tr key={invoice.id} style={{ borderBottom: '1px solid #1f2937' }}>
+                    <td style={{ padding: '8px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedInvoiceIds.includes(invoice.id)}
+                        onChange={(e) => handleSelectOne(invoice.id, e.target.checked)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </td>
+                    <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13 }}>{invoice.invoice_no}</td>
+                    <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13 }}>{invoice.clients?.name || '-'}</td>
+                    <td style={{ padding: '8px 0', textAlign: 'center' }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '3px 10px',
+                          borderRadius: 4,
+                          fontSize: 11,
+                          fontWeight: 500,
+                          textTransform: 'capitalize',
+                          background: statusColor.bg,
+                          color: statusColor.text,
+                        }}
+                      >
+                        {invoice.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '8px 0', color: '#e5e7eb', fontSize: 13, textAlign: 'right' }}>
+                      {invoice.invoice_date}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
