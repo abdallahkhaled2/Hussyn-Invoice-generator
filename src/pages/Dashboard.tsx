@@ -271,6 +271,10 @@ const Dashboard: React.FC = () => {
           <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
         </div>
 
+        <h2 style={{ margin: '0 0 24px 0', color: '#e5e7eb', fontSize: 24, fontWeight: 600 }}>
+          Overview
+        </h2>
+
         <div style={{ marginBottom: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <input
             type="text"
@@ -336,10 +340,6 @@ const Dashboard: React.FC = () => {
             </button>
           )}
         </div>
-
-        <h2 style={{ margin: '0 0 24px 0', color: '#e5e7eb', fontSize: 24, fontWeight: 600 }}>
-          Overview
-        </h2>
 
         <h3 style={{ margin: '0 0 12px 0', color: '#9ca3af', fontSize: 14, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Financial Overview

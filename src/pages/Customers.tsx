@@ -253,7 +253,7 @@ const Customers: React.FC = () => {
                   Orders
                 </th>
                 <th style={{ textAlign: 'right', padding: 16, color: '#9ca3af', fontSize: 12, fontWeight: 600 }}>
-                  Total Revenue
+                  Total Sales
                 </th>
                 <th style={{ textAlign: 'center', padding: 16, color: '#9ca3af', fontSize: 12, fontWeight: 600 }}>
                   Actions
